@@ -29,21 +29,5 @@
   ],
   "terminal": {
     "showTerminalProgress": true
-  },
-  "extensions": [
-    "+extensions/ask-user-question.ts",
-    "+extensions/clear-on-start.ts",
-    "+extensions/confirm-interrupt.ts",
-    "+extensions/context-inspector.ts",
-    "+extensions/model-preset.ts",
-    "+extensions/ui-customization/index.ts"
-  ],
-  "skills": [
-    "+skills/brainstorming/SKILL.md",
-    "+skills/grill-me/SKILL.md",
-    "+skills/implement/SKILL.md",
-    "+skills/keep-it-simple/SKILL.md",
-    "+skills/plan/SKILL.md",
-    "+skills/tdd/SKILL.md"
-  ]
+  }
 }
