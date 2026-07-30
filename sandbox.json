@@ -63,11 +63,7 @@
       "~/.aws",
       "~/.git-credentials",
       "~/.npmrc",
-      "~/.netrc",
-      "~/.bashrc",
-      "~/.profile",
-      "~/.zshrc",
-      "~/.config/fish"
+      "~/.netrc"
     ]
   }
 }
