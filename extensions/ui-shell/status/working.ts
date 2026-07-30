@@ -2,7 +2,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { formatStatusDuration } from "./duration";
+import { formatStatusDuration } from "../shared/duration";
 
 export function installWorkingStatus(pi: ExtensionAPI) {
   let startedAt: number | undefined;

@@ -1,0 +1,8 @@
+import installContextCommand from "./context-command";
+import installSystemPromptCommand from "./system-prompt-command";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+
+export default function diagnostics(pi: ExtensionAPI) {
+  installContextCommand(pi);
+  installSystemPromptCommand(pi);
+}

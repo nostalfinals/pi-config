@@ -4,7 +4,7 @@ import {
   type Theme,
 } from "@earendil-works/pi-coding-agent";
 import { Loader } from "@earendil-works/pi-tui";
-import { formatStatusDuration } from "./duration";
+import { formatStatusDuration } from "../shared/duration";
 
 type CompactionLoader = Loader & {
   kind?: string;

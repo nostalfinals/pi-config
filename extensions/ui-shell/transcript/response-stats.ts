@@ -1,6 +1,6 @@
 import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
-import { formatDuration } from "./duration";
+import { formatDuration } from "../shared/duration";
 
 const RESPONSE_STATS_ENTRY_TYPE = "ui-customization-response-stats";
 

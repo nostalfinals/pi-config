@@ -3,22 +3,24 @@ import {
   type ExtensionAPI,
   type ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { installCompactionStatus } from "./compaction-status";
-import { installCompactionSummary } from "./compaction-summary";
+import { applyConfirmInterrupt, type ConfirmInterruptController } from "./editor/confirm-interrupt";
+import { applyEditorInputInterceptors } from "./editor/input-interceptors";
+import { applyPromptEditorStyle } from "./editor/prompt-style";
 import { installFooter } from "./footer";
-import { refreshGit } from "./git";
-import { installMcpStatus } from "./mcp-status";
-import { applyPromptEditorStyle } from "./prompt-editor";
-import { installResponseStats } from "./response-stats";
-import { installSkillInvocationStyle } from "./skill-invocation";
-import { installToolIndicators } from "./tool-indicator";
-import type { GitInfo } from "./types";
-import { emptyGitInfo } from "./types";
-import { installWorkingStatus } from "./working-status";
+import { refreshGit } from "./footer/git";
+import { installMcpStatus } from "./footer/mcp-status";
+import type { GitInfo } from "./footer/types";
+import { emptyGitInfo } from "./footer/types";
+import { installCompactionStatus } from "./status/compaction";
+import { installWorkingStatus } from "./status/working";
+import { installCompactionSummary } from "./transcript/compaction-summary";
+import { installResponseStats } from "./transcript/response-stats";
+import { installSkillInvocationStyle } from "./transcript/skill-invocation";
+import { installToolIndicators } from "./transcript/tool-indicator";
 
 const POLL_INTERVAL_MS = 3_000;
 
-export default function uiCustomization(pi: ExtensionAPI) {
+export default function uiShell(pi: ExtensionAPI) {
   let currentContext: ExtensionContext | undefined;
   let requestRender: (() => void) | undefined;
   let pollTimer: ReturnType<typeof setInterval> | undefined;
@@ -27,9 +29,16 @@ export default function uiCustomization(pi: ExtensionAPI) {
   let gitInfo = emptyGitInfo();
   let mcpConnectedCount = 0;
   let toolsExpanded = false;
+  let compactionActive = false;
+  let interruptController: ConfirmInterruptController<CustomEditor> | undefined;
 
   function scheduleRender() {
     requestRender?.();
+  }
+
+  function finishCompaction() {
+    compactionActive = false;
+    interruptController?.clear();
   }
 
   installCompactionStatus(pi);
@@ -78,18 +87,28 @@ export default function uiCustomization(pi: ExtensionAPI) {
         requestRender = nextRequestRender;
       },
     );
+
     if (ctx.mode === "tui") {
       const previousEditorFactory = ctx.ui.getEditorComponent();
       ctx.ui.setEditorComponent((tui, theme, keybindings) => {
-        const editor = previousEditorFactory
+        const baseEditor = previousEditorFactory
           ? previousEditorFactory(tui, theme, keybindings)
           : new CustomEditor(tui, theme, keybindings);
-        return applyPromptEditorStyle(editor, keybindings, () => {
+        const styledEditor = applyPromptEditorStyle(baseEditor, keybindings, () => {
           toolsExpanded = !toolsExpanded;
           scheduleRender();
         });
+        interruptController = applyConfirmInterrupt(
+          styledEditor,
+          keybindings,
+          ctx,
+          () => compactionActive,
+          () => tui.requestRender(),
+        );
+        return applyEditorInputInterceptors(interruptController.editor);
       });
     }
+
     void refreshGitState(ctx, true);
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(() => {
@@ -99,19 +118,29 @@ export default function uiCustomization(pi: ExtensionAPI) {
 
   pi.on("model_select", () => scheduleRender());
   pi.on("thinking_level_select", () => scheduleRender());
-
   pi.on("turn_end", () => scheduleRender());
   pi.on("input", (_event, ctx) => {
     void refreshGitState(ctx);
     return { action: "continue" };
   });
   pi.on("tool_execution_end", (_event, ctx) => void refreshGitState(ctx));
+  pi.on("session_before_compact", (event) => {
+    compactionActive = true;
+    event.signal.addEventListener("abort", finishCompaction, { once: true });
+  });
+  pi.on("session_compact", finishCompaction);
+  pi.on("agent_end", () => {
+    if (!compactionActive) interruptController?.clear();
+  });
 
   pi.on("session_shutdown", (_event, ctx) => {
     generation += 1;
     currentContext = undefined;
     requestRender = undefined;
     refreshRunning = false;
+    compactionActive = false;
+    interruptController?.clear(false);
+    interruptController = undefined;
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = undefined;
     if (ctx.mode === "tui") {
