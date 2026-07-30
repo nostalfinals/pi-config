@@ -25,7 +25,8 @@
         "+index.ts"
       ]
     },
-    "npm:pi-sandbox"
+    "npm:pi-sandbox",
+    "npm:@juicesharp/rpiv-ask-user-question"
   ],
   "terminal": {
     "showTerminalProgress": true
