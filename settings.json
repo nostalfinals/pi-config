@@ -8,23 +8,13 @@
   "hideThinkingBlock": true,
   "packages": [
     {
-      "source": "npm:pi-mcp-adapter",
-      "extensions": [
-        "+index.ts"
-      ]
-    },
-    {
       "source": "../../Projects/pi-dcp",
       "extensions": [
         "+index.ts"
       ]
     },
-    {
-      "source": "npm:pi-compact-thinking",
-      "extensions": [
-        "+index.ts"
-      ]
-    },
+    "npm:pi-mcp-adapter",
+    "npm:pi-compact-thinking",
     "npm:pi-sandbox",
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
