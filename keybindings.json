@@ -1,0 +1,14 @@
+{
+  "tui.editor.deleteToLineEnd": [],
+  "tui.editor.cursorLineEnd": ["end"],
+  "tui.input.tab": ["tab"],
+  "app.thinking.cycle": ["ctrl+t"],
+  "app.thinking.toggle": ["shift+tab"],
+  "app.model.cycleForward": [],
+  "app.model.select": ["alt+m"],
+  "app.session.new": ["ctrl+n"],
+  "app.session.tree": ["ctrl+g"],
+  "app.session.resume": ["ctrl+l"],
+  "app.editor.external": ["ctrl+e"],
+  "app.clipboard.pasteImage": ["ctrl+v", "alt+v"]
+}

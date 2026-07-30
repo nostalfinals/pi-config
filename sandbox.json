@@ -1,0 +1,73 @@
+{
+  "enabled": true,
+  "allowBrowserProcess": false,
+  "network": {
+    "allowLocalBinding": true,
+    "allowAllUnixSockets": false,
+    "allowUnauthenticatedSocksProxy": false,
+    "allowedDomains": [
+      "localhost",
+      "127.0.0.1",
+      "github.com",
+      "*.github.com",
+      "raw.githubusercontent.com",
+      "objects.githubusercontent.com",
+      "registry.npmjs.org",
+      "*.npmjs.org",
+      "repo.maven.apache.org",
+      "repo1.maven.org",
+      "*.maven.org",
+      "plugins.gradle.org",
+      "services.gradle.org",
+      "*.gradle.org",
+      "jitpack.io",
+      "repo.papermc.io",
+      "maven.fabricmc.net",
+      "maven.neoforged.net",
+      "maven.minecraftforge.net",
+      "repo.spongepowered.org"
+    ],
+    "deniedDomains": []
+  },
+  "filesystem": {
+    "denyRead": [
+      "~"
+    ],
+    "allowRead": [
+      ".",
+      "~/.local/bin",
+      "~/.local/share/mise",
+      "~/.nvm",
+      "~/.gradle",
+      "~/.m2/repository",
+      "~/.npm",
+      "~/.pi/agent"
+    ],
+    "allowWrite": [
+      ".",
+      "/tmp",
+      "~/.gradle",
+      "~/.m2/repository",
+      "~/.npm"
+    ],
+    "denyWrite": [
+      ".env",
+      ".env.*",
+      "*.pem",
+      "*.key",
+      "*.p12",
+      "*.pfx",
+      ".git/hooks",
+      "~/.ssh",
+      "~/.gnupg",
+      "~/.aws",
+      "~/.git-credentials",
+      "~/.npmrc",
+      "~/.netrc",
+      "~/.bashrc",
+      "~/.profile",
+      "~/.zshrc",
+      "~/.config/fish"
+    ]
+  }
+}

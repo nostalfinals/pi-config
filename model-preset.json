@@ -1,0 +1,20 @@
+{
+  "shortcut": "ctrl+k",
+  "presets": [
+    {
+      "provider": "openai-codex",
+      "model": "gpt-5.6-sol",
+      "thinkingLevel": "medium"
+    },
+    {
+      "provider": "openai-codex",
+      "model": "gpt-5.6-terra",
+      "thinkingLevel": "high"
+    },
+    {
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
+      "thinkingLevel": "high"
+    }
+  ]
+}

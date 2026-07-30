@@ -1,0 +1,49 @@
+{
+  "lastChangelogVersion": "0.82.1",
+  "theme": "catppuccin-mocha",
+  "quietStartup": true,
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "medium",
+  "hideThinkingBlock": true,
+  "packages": [
+    {
+      "source": "npm:pi-mcp-adapter",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
+    {
+      "source": "../../Projects/pi-dcp",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
+    {
+      "source": "npm:pi-compact-thinking",
+      "extensions": [
+        "+index.ts"
+      ]
+    },
+    "npm:pi-sandbox"
+  ],
+  "terminal": {
+    "showTerminalProgress": true
+  },
+  "extensions": [
+    "+extensions/ask-user-question.ts",
+    "+extensions/clear-on-start.ts",
+    "+extensions/confirm-interrupt.ts",
+    "+extensions/context-inspector.ts",
+    "+extensions/model-preset.ts",
+    "+extensions/ui-customization/index.ts"
+  ],
+  "skills": [
+    "+skills/brainstorming/SKILL.md",
+    "+skills/grill-me/SKILL.md",
+    "+skills/implement/SKILL.md",
+    "+skills/keep-it-simple/SKILL.md",
+    "+skills/plan/SKILL.md",
+    "+skills/tdd/SKILL.md"
+  ]
+}
