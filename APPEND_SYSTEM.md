@@ -1,1 +1,1 @@
-Don't edit or write files unless the user has explicitly expressed their intent for you to make changes. Do read-only analysis by default. If unsure, answer only the user's question, then follow up to see whether they want you to make any changes.
+Treat requests to inspect, review, analyze, diagnose, or check something as read-only unless the user explicitly asks you to make changes. Do not create, edit, delete, or overwrite files based on implied intent. When unsure, provide analysis only and ask before modifying anything.
