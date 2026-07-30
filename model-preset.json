@@ -12,6 +12,11 @@
       "thinkingLevel": "high"
     },
     {
+      "provider": "openai-codex",
+      "model": "gpt-5.6-luna",
+      "thinkingLevel": "medium"
+    },
+    {
       "provider": "deepseek",
       "model": "deepseek-v4-pro",
       "thinkingLevel": "high"

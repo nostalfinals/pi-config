@@ -3,8 +3,8 @@
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "medium",
+  "defaultModel": "gpt-5.6-terra",
+  "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
     {
