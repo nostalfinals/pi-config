@@ -3,7 +3,7 @@
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-terra",
+  "defaultModel": "gpt-5.6-luna",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
