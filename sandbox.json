@@ -1,37 +1,17 @@
 {
   "enabled": true,
-  "allowBrowserProcess": false,
+  "allowBrowserProcess": true,
   "network": {
     "allowLocalBinding": true,
     "allowAllUnixSockets": false,
     "allowUnauthenticatedSocksProxy": false,
-    "allowedDomains": [
-      "localhost",
-      "127.0.0.1",
-      "github.com",
-      "*.github.com",
-      "raw.githubusercontent.com",
-      "objects.githubusercontent.com",
-      "registry.npmjs.org",
-      "*.npmjs.org",
-      "repo.maven.apache.org",
-      "repo1.maven.org",
-      "*.maven.org",
-      "plugins.gradle.org",
-      "services.gradle.org",
-      "*.gradle.org",
-      "jitpack.io",
-      "repo.papermc.io",
-      "maven.fabricmc.net",
-      "maven.neoforged.net",
-      "maven.minecraftforge.net",
-      "repo.spongepowered.org"
-    ],
+    "allowedDomains": ["*"],
     "deniedDomains": []
   },
   "filesystem": {
     "denyRead": [
-      "~"
+      "~",
+      "~/.pi/agent/auth.json"
     ],
     "allowRead": [
       ".",
@@ -45,10 +25,7 @@
     ],
     "allowWrite": [
       ".",
-      "/tmp",
-      "~/.gradle",
-      "~/.m2/repository",
-      "~/.npm"
+      "/tmp"
     ],
     "denyWrite": [
       ".env",
