@@ -2,16 +2,19 @@
   "enabled": true,
   "allowBrowserProcess": true,
   "network": {
-    "allowLocalBinding": true,
-    "allowAllUnixSockets": false,
-    "allowUnauthenticatedSocksProxy": false,
-    "allowedDomains": ["*"],
-    "deniedDomains": []
+    "disabled": true
   },
   "filesystem": {
+    "disableMandatoryProtections": true,
     "denyRead": [
       "~",
-      "~/.pi/agent/auth.json"
+      "~/.pi/agent/auth.json",
+      ".env",
+      ".env.*",
+      "*.pem",
+      "*.key",
+      "*.p12",
+      "*.pfx"
     ],
     "allowRead": [
       ".",
@@ -21,19 +24,17 @@
       "~/.gradle",
       "~/.m2/repository",
       "~/.npm",
-      "~/.pi/agent"
+      "~/.pi/agent",
+      "~/.gitconfig",
+      "~/.config/git",
+      "~/.config/gh",
+      "~/.git-credentials"
     ],
     "allowWrite": [
       ".",
       "/tmp"
     ],
     "denyWrite": [
-      ".env",
-      ".env.*",
-      "*.pem",
-      "*.key",
-      "*.p12",
-      "*.pfx",
       ".git/hooks",
       "~/.ssh",
       "~/.gnupg",
