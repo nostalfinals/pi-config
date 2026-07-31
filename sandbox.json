@@ -8,13 +8,7 @@
     "disableMandatoryProtections": true,
     "denyRead": [
       "~",
-      "~/.pi/agent/auth.json",
-      ".env",
-      ".env.*",
-      "*.pem",
-      "*.key",
-      "*.p12",
-      "*.pfx"
+      "~/.pi/agent/auth.json"
     ],
     "allowRead": [
       ".",
@@ -32,16 +26,12 @@
     ],
     "allowWrite": [
       ".",
-      "/tmp"
-    ],
-    "denyWrite": [
-      ".git/hooks",
-      "~/.ssh",
-      "~/.gnupg",
-      "~/.aws",
-      "~/.git-credentials",
-      "~/.npmrc",
-      "~/.netrc"
+      "/tmp",
+      "~/.nvm",
+      "~/.gradle",
+      "~/.m2/repository",
+      "~/.npm",
+      "~/.pi/agent"
     ]
   }
 }
