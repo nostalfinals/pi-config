@@ -7,16 +7,11 @@
   "defaultThinkingLevel": "max",
   "hideThinkingBlock": true,
   "packages": [
-    {
-      "source": "../../Projects/pi-dcp",
-      "extensions": [
-        "+index.ts"
-      ]
-    },
     "npm:pi-mcp-adapter",
     "npm:pi-compact-thinking",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "git:github.com/nostalfinals/pi-sandbox"
+    "git:github.com/nostalfinals/pi-sandbox",
+    "git:github.com/nostalfinals/pi-dcp"
   ],
   "terminal": {
     "showTerminalProgress": true
