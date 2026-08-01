@@ -9,6 +9,11 @@
     {
       "provider": "openai-codex",
       "model": "gpt-5.6-terra",
+      "thinkingLevel": "high"
+    },
+    {
+      "provider": "openai-codex",
+      "model": "gpt-5.6-terra",
       "thinkingLevel": "medium"
     },
     {
