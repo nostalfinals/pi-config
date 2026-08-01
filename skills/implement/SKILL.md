@@ -1,10 +1,8 @@
 ---
 name: implement
-description: Implement exactly one next unfinished vertical slice from an approved SPEC.md and PLAN.md, validate it, update that slice in PLAN.md, and stop for review. Use after planning when incremental implementation is requested.
+description: Implement one development slices according to the requirements and design decisions previously agreed upon and documented in `PLAN.md` and `SPEC.md`.
 disable-model-invocation: true
 ---
-
-# Implement
 
 Implement exactly one unfinished, unblocked `PLAN.md` slice under the `SPEC.md` contract. The user must explicitly identify the `docs/agent-tasks/<short-purpose>/` task to work on. If they do not, stop and report that a specific task is required; do not infer one or search for unfinished work. After completion or blockage, update only its plan state and stop. Never continue, scaffold, or prepare the next slice.
 
@@ -15,8 +13,6 @@ The workflow is fully AFK after task selection: do not request user participatio
 - `docs/agent-tasks/<short-purpose>/SPEC.md`: behavior, architecture, constraints, non-goals, acceptance criteria.
 - `docs/agent-tasks/<short-purpose>/PLAN.md`: slice order, dependencies, scope, validation, progress.
 - Repository instructions and conventions remain binding unless the approved specification changes them.
-
-Never silently reinterpret `SPEC.md`, use plan notes to contradict it, or edit it without explicit user approval.
 
 ## 1. Load context and select one slice
 
@@ -45,9 +41,11 @@ Stop in place, preserve current workspace changes, and report the problem withou
 
 Resolve minor implementation details from `SPEC.md`, `PLAN.md`, and established local conventions without user involvement.
 
-## 3. Apply referenced skills
+## 3. Use Test-Driven Development
 
-For behavior that automated tests can meaningfully protect, read and follow `tdd`.
+When a behavior or feature can be meaningfully verified through automated tests, use Test-Driven Development and follow the `tdd` skill.
+
+Some code may not be well suited to automated testing. In such cases, do not force a TDD workflow or continue writing low-value tests merely for the sake of test coverage.
 
 ## 4. Implement only the selected outcome
 
@@ -87,4 +85,4 @@ Inspect the complete diff and:
 - confirm no later-slice or unrelated work slipped in;
 - confirm behavior-focused tests, required outcome/criteria, `SPEC.md`, and `PLAN.md` agree;
 
-Report the selected slice, changes, validation results, deviations/simplifications, blockers/risks/environment limits/unrelated discoveries, and the `PLAN.md` update. Then stop and wait for an explicit request for another pass. Do not change the next slice’s status or begin any part of it.
+Report the selected slice, changes, validation results, deviations/simplifications, blockers/risks/environment limits/unrelated discoveries, and the `PLAN.md` update. Then stop and wait for an explicit request for another pass.
