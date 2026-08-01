@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Produce two non-duplicative artifacts in `docs/agent-tasks/<short-purpose>/` at the project root, creating the directory when needed:
 
-- `SPEC.md`: **The Destination.** A stable contract for behavior, design, boundaries, constraints, and acceptance.
+- `SPEC.md`: **The destination.** A stable contract for behavior, design, boundaries, constraints, and acceptance.
 - `PLAN.md`: **The way.** A adaptable sequence of independently verifiable slices implementing that contract.
 
 Use a concise kebab-case `<short-purpose>` that describes the plan, for example `docs/agent-tasks/implement-grayscale-toggle/{SPEC,PLAN}.md`.
@@ -30,7 +30,7 @@ Before creating or modifying either planning file, restate every point aligned t
 
 Output the complete restatement as a normal assistant message and ask the user to confirm that it is complete and accurate, then stop. Do not put the restatement in `ask_user_question`. If the user corrects or adds a point, revise the full restatement and obtain confirmation again the same way.
 
-## 4. Define slices
+## 4. Define slices with execution roadmap
 
 A slice is a small, vertical, independently verifiable increment of behavior that passes through every layer needed to deliver one narrow user-visible or domain-observable outcome.
 
@@ -47,6 +47,8 @@ entry point → application/use case → domain logic → persistence or externa
 5. Order slices by meaningful feedback and dependencies, so each slice leaves the codebase coherent and verifiable.
 
 A slice may be an enabling slice only when it is required before any meaningful behavior can be implemented. Do not create slices whose only purpose is to complete an entire technical layer.
+
+After defining the slices, create an execution roadmap as a Mermaid graph that clearly shows dependencies and genuinely parallelizable routes. Keep dependent slices on the same sequential route.
 
 ## 5. Obtain slice approval
 
@@ -105,6 +107,10 @@ Derive it from the confirmed alignment and approved slice proposal using this st
 <only implementation facts that affect execution>
 
 ## Slices
+
+### Execution Roadmap
+<execution roadmap with parallelizable routes mentioned above>
+
 ### Slice 1 — <outcome>
 **Status:** Pending
 
@@ -130,13 +136,6 @@ Derive it from the confirmed alignment and approved slice proposal using this st
 <only checks that genuinely require all slices>
 ```
 
-## 8. Audit and stop
-
-Before finishing, ensure:
-
-- every goal is covered and no slice adds behavior outside `SPEC.md`;
-- architecture is sufficiently fixed, dependencies are accurate, and source responsibilities are coherent;
-- tests accompany their behavior and criteria test behavior/boundaries rather than implementation details;
-- `SPEC.md` describes only the destination and `PLAN.md` only the route, without unnecessary duplication.
+---
 
 After writing both approved files in their task directory, summarize what was written and any faithful presentational adjustment made while turning the approvals into documents. Then stop. Do not implement or modify production code in this invocation.
