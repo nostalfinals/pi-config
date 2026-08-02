@@ -1,66 +1,37 @@
 ---
 name: plan
-description: Inspect the codebase, align with the user's requirements, and produce comprehensive `PLAN.md` and `SPEC.md` files for a later implementation session. Use this when the user explicitly requests a "Plan → Implement → Review" workflow.
+description: Inspect the codebase, align requirements and design decisions with the user, and produce `SPEC.md` and `PLAN.md` for a later "Plan → Implement → Review" workflow.
 disable-model-invocation: true
 ---
 
-Produce two non-duplicative artifacts in `docs/agent-tasks/<short-purpose>/` at the project root, creating the directory when needed:
+Create two complementary artifacts under `docs/agent-tasks/<short-purpose>/`:
 
-- `SPEC.md`: **The destination.** A stable contract for behavior, design, boundaries, constraints, and acceptance.
-- `PLAN.md`: **The way.** A adaptable sequence of independently verifiable slices implementing that contract.
+- `SPEC.md`: the intended behavior, settled design, boundaries, constraints, and acceptance criteria.
+- `PLAN.md`: an adaptable sequence of independently verifiable slices that delivers the specification.
 
-Use a concise kebab-case `<short-purpose>` that describes the plan, for example `docs/agent-tasks/implement-grayscale-toggle/{SPEC,PLAN}.md`.
+Use a concise kebab-case task name. Do not modify production code in this invocation.
 
-## 1. Establish context
+## 1. Understand the change
 
-Before designing:
+Read repository instructions, inspect the working tree, and trace the relevant source, tests, conventions, current behavior, and integration points. Preserve existing changes and investigate only what is relevant to the request.
 
-1. Read repository instructions and inspect the working tree. Preserve user changes.
-2. Inspect the relevant structure, build system, source, tests, nearby implementations, and conventions.
-3. Trace current behavior and integration points in code.
-4. Record only findings relevant to the request.
+## 2. Align and approve
 
-## 2. Align design decisions
+Read and use the `grill-me` skill to resolve material requirements and design decisions with the user.
 
-Read and use the `grill-me` skill to align design decisions with the user.
+Then define small vertical slices around user-visible or domain-observable outcomes. Each slice must cover the smallest end-to-end path needed for its outcome and leave the codebase coherent and independently verifiable. Use an enabling slice only when no meaningful vertical outcome can be implemented first.
 
-## 3. Confirm the grill-me alignment
+Present the following together for approval:
 
-Before creating or modifying either planning file, restate every point aligned through `grill-me` (or already made explicit in the conversation) as a concise declarative conclusion.
+1. A concise, declarative summary of the aligned requirements and design decisions.
+2. The proposed ordered slices, including their outcomes and dependencies.
+3. A Mermaid execution roadmap only when the plan has meaningful parallel routes or non-obvious dependencies. Keep dependent slices on the same sequential route.
 
-Output the complete restatement as a normal assistant message and ask the user to confirm that it is complete and accurate, then stop. Do not put the restatement in `ask_user_question`. If the user corrects or adds a point, revise the full restatement and obtain confirmation again the same way.
+Ask the user to confirm that the proposal is complete and accurate, then stop. If they revise it, update the complete proposal and obtain approval again. Do not create or modify `SPEC.md` or `PLAN.md` before explicit approval.
 
-## 4. Define slices with execution roadmap
+## 3. Write `SPEC.md`
 
-A slice is a small, vertical, independently verifiable increment of behavior that passes through every layer needed to deliver one narrow user-visible or domain-observable outcome.
-
-A slice should normally include the complete path for that behavior, such as:
-
-```
-entry point → application/use case → domain logic → persistence or external integration → observable result
-```
-
-1. Start from a narrow user-visible action or domain outcome, not from a technical layer.
-2. Trace the smallest end-to-end path required to make that outcome work.
-3. Implement only the abstractions and infrastructure needed by that path.
-4. Keep unrelated behavior out of the slice, even when it belongs to the same feature area.
-5. Order slices by meaningful feedback and dependencies, so each slice leaves the codebase coherent and verifiable.
-
-A slice may be an enabling slice only when it is required before any meaningful behavior can be implemented. Do not create slices whose only purpose is to complete an entire technical layer.
-
-After defining the slices, create an execution roadmap as a Mermaid graph that clearly shows dependencies and genuinely parallelizable routes. Keep dependent slices on the same sequential route.
-
-## 5. Obtain slice approval
-
-Only after explicit confirmation of the alignment restatement, propose the ordered implementation slices with its title in the conversation.
-
-Present the slice proposal and obtain approval in the same manner as section 3. If revisions are requested, update the proposal and obtain approval again.
-
-Do not create or modify `SPEC.md` or `PLAN.md` until both the alignment restatement and slice proposal have explicit approval.
-
-## 6. Write `docs/agent-tasks/<short-purpose>/SPEC.md`
-
-After alignment confirmation and slice approval, translate the confirmed alignment into the intended end state. Use applicable sections below and omit irrelevant ones:
+Translate the approved decisions into the intended end state, using only applicable sections:
 
 ```markdown
 # Specification: <change>
@@ -68,31 +39,32 @@ After alignment confirmation and slice approval, translate the confirmed alignme
 ## Status
 Approved for implementation.
 
-## Problem
-## Goals
-## Non-goals
+## Context
+<problem, relevant current behavior, and affected users or callers>
+
+## Goals and non-goals
+<required outcomes and intentional exclusions>
+
 ## Required behavior
-## Technical design
-## Target source structure
-## Interfaces and data model
+<observable workflows, rules, state changes, errors, and invariants>
+
+## Design decisions
+<settled technical decisions the implementer must not revisit>
+
 ## Constraints
-## Edge cases and error handling
+<requirements that materially restrict valid implementations>
+
 ## Acceptance criteria
-## Verification strategy
+<independently verifiable completion conditions>
 ```
 
-The specification must:
+Specify only information that affects behavior, constrains implementation, or prevents a material ambiguity. Include interfaces, schemas, protocols, state transitions, lifecycle, error semantics, compatibility, concurrency, security, performance, or source structure only when relevant. Omit empty sections and statements that merely say a concern does not apply.
 
-- Describe the concrete problem, current behavior, affected users or callers, intended outcome, and explicit non-goals.
-- Define the complete intended behavior and user or caller experience, including normal workflows, inputs and outputs, state changes, lifecycle, concurrency, compatibility, and externally visible side effects. Cover empty, missing, invalid, and failure cases where they materially affect the design.
-- Resolve decisions the implementation must not improvise, including module boundaries, dependency direction, ownership, public and integration interfaces, persistence, lifecycle, concurrency, error handling, logging, and reuse.
-- Provide concrete signatures, schemas, protocols, data formats, state transitions, or pseudocode wherever needed to eliminate material ambiguity.
-- Record applicable constraints covering dependencies, APIs, performance, compatibility, security, data integrity, layout, and implementation simplicity. List expected added, modified, or removed files and their responsibilities only when reasonably knowable; do not invent or over-fragment the file map.
-- Define realistic edge cases and make every goal verifiable through explicit acceptance criteria. Specify the appropriate verification boundary using focused tests, integration or end-to-end checks, type checking, linting, builds, or manual QA.
+Describe the destination rather than the implementation sequence. Keep current source locations, task ordering, and validation commands in `PLAN.md` unless they are themselves durable architectural constraints.
 
-## 7. Write `docs/agent-tasks/<short-purpose>/PLAN.md`
+## 4. Write `PLAN.md`
 
-Derive it from the confirmed alignment and approved slice proposal using this structure:
+Derive the implementation plan from `SPEC.md` and the approved slices:
 
 ```markdown
 # Implementation Plan: <change>
@@ -104,12 +76,12 @@ Derive it from the confirmed alignment and approved slice proposal using this st
 - [ ] Slice 1 — <outcome>
 
 ## Current codebase state
-<only implementation facts that affect execution>
+<only facts that materially affect execution>
+
+## Execution roadmap
+<Mermaid graph only when useful; otherwise omit>
 
 ## Slices
-
-### Execution Roadmap
-<execution roadmap with parallelizable routes mentioned above>
 
 ### Slice 1 — <outcome>
 **Status:** Pending
@@ -118,24 +90,21 @@ Derive it from the confirmed alignment and approved slice proposal using this st
 <what becomes observably true>
 
 **Scope**
-- <smallest coherent implementation, source areas, tests/fixtures, integration points>
-
-**Out of scope**
-- <tempting adjacent work specific to this slice>
+- <smallest coherent implementation, relevant source areas, tests, and integration points>
 
 **Implementation notes**
-- <decisions needed to follow SPEC.md, repository patterns, and dependency boundaries>
+- <decisions needed to follow the specification and repository conventions>
 
 **Validation**
-- `<exact command/check>` — <behavior proved>
+- `<exact command or check>` — <what it proves>
 
 **Dependencies**
 - None.
 
 ## Final verification
-<only checks that genuinely require all slices>
+<checks that genuinely require all slices>
 ```
 
----
+Keep `SPEC.md` and `PLAN.md` non-duplicative. Add slice-specific exclusions only when they prevent tempting adjacent work; do not repeat global non-goals in every slice.
 
-After writing both approved files in their task directory, summarize what was written and any faithful presentational adjustment made while turning the approvals into documents. Then stop. Do not implement or modify production code in this invocation.
+After writing both files, summarize their contents and any presentational adjustments made without changing the approved substance. Then stop.

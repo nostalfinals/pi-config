@@ -1,88 +1,72 @@
 ---
 name: implement
-description: Implement one development slices according to the requirements and design decisions previously agreed upon and documented in `PLAN.md` and `SPEC.md`.
+description: Implement one unfinished slice from an explicitly selected task according to its approved `SPEC.md` and `PLAN.md`, validate it, and record its result.
 disable-model-invocation: true
 ---
 
-Implement exactly one unfinished, unblocked `PLAN.md` slice under the `SPEC.md` contract. The user must explicitly identify the `docs/agent-tasks/<short-purpose>/` task to work on. If they do not, stop and report that a specific task is required; do not infer one or search for unfinished work. After completion or blockage, update only its plan state and stop. Never continue, scaffold, or prepare the next slice.
+Implement exactly one unfinished, unblocked slice from `docs/agent-tasks/<short-purpose>/`. The user must explicitly identify the task; they may optionally identify a slice. If no slice is named, select the next actionable slice whose dependencies are complete.
 
-The workflow is fully AFK after task selection: do not request user participation or confirmation. Infer minor unstated details from that task's `SPEC.md`, `PLAN.md`, and established repository conventions. If a serious information or decision gap exists, or the two files conflict, stop in place, preserve current workspace changes, and report the problem without asking a question or continuing implementation.
+The workflow is AFK after task selection. Resolve minor details from the task documents and established repository conventions without asking the user. If a material decision is missing, contradicted, or invalidated, stop safely and report the blocker. Never continue to or prepare the next slice.
 
 ## Sources of truth
 
-- `docs/agent-tasks/<short-purpose>/SPEC.md`: behavior, architecture, constraints, non-goals, acceptance criteria.
-- `docs/agent-tasks/<short-purpose>/PLAN.md`: slice order, dependencies, scope, validation, progress.
-- Repository instructions and conventions remain binding unless the approved specification changes them.
+- `SPEC.md`: behavior, design decisions, constraints, non-goals, and acceptance criteria.
+- `PLAN.md`: slice scope, order, dependencies, validation, and progress.
+- Repository instructions and conventions remain binding unless explicitly superseded by the approved specification.
 
-## 1. Load context and select one slice
+## 1. Load and verify the slice
 
 Before editing:
 
-1. Confirm the user explicitly named one `docs/agent-tasks/<short-purpose>/` task. If not, report the requirement and stop without searching for candidates.
-2. Read repository instructions and that task's `SPEC.md` and `PLAN.md` completely.
-3. Inspect the working tree and preserve unrelated user changes.
-4. Identify complete, pending, in-progress, and blocked slices.
-5. Select the user-named slice. If the user names no slice, select the next actionable slice: the first unfinished, unblocked slice whose dependencies are complete.
-6. Inspect relevant source/tests and trace current behavior and integration points; do not rely on old summaries or assume the codebase still matches the plan.
+1. Read repository instructions and the selected task's `SPEC.md` and `PLAN.md` completely.
+2. Inspect the working tree and preserve unrelated changes.
+3. Select the named slice, or the next unfinished and unblocked slice if none was named.
+4. Inspect the relevant source and tests, trace current behavior, and confirm the slice still matches the codebase.
+5. Confirm its dependencies, scope, validation, and external requirements are available and that it fits one focused implementation session.
 
-If no actionable slice exists, report that and stop.
+If no slice is actionable, report why and stop.
 
-## 2. Confirm it is implementable
+Stop without changing the approved documents or expanding scope when:
 
-Confirm dependencies, outcome, scope, validation, fixtures/external requirements, and codebase assumptions; the slice must fit one focused session, agree with `SPEC.md`, and not require later-slice work.
+- required behavior is materially ambiguous or `SPEC.md` and `PLAN.md` conflict;
+- an approved boundary or design decision must change;
+- the slice must materially expand or split into separate outcomes;
+- the current code invalidates a material assumption;
+- implementation exposes an unmade migration, compatibility, security, destructive-data, or unavailable-dependency decision.
 
-Stop in place, preserve current workspace changes, and report the problem without asking the user or continuing if:
+## 2. Implement the selected outcome
 
-- required behavior has a serious ambiguity or `SPEC.md` conflicts with `PLAN.md`;
-- an approved boundary or `SPEC.md` must change;
-- scope must materially expand or split into independently verifiable outcomes;
-- code invalidates a material design assumption;
-- an unexpected migration, compatibility, security, destructive-data, or unavailable-dependency decision appears.
+Follow the specification, slice boundaries, and repository conventions. Implement only what is needed for the selected observable outcome; avoid later-slice work, unrelated refactoring, and intentionally incomplete horizontal layers.
 
-Resolve minor implementation details from `SPEC.md`, `PLAN.md`, and established local conventions without user involvement.
+When behavior can be meaningfully verified automatically, use Test-Driven Development and follow the `tdd` skill. Do not force TDD or add low-value tests for code that is not suitably testable.
 
-## 3. Use Test-Driven Development
+Report unrelated defects without fixing them. If one blocks the slice, fix only what is strictly necessary when doing so stays within the approved boundaries; otherwise mark the slice blocked.
 
-When a behavior or feature can be meaningfully verified through automated tests, use Test-Driven Development and follow the `tdd` skill.
+## 3. Validate
 
-Some code may not be well suited to automated testing. In such cases, do not force a TDD workflow or continue writing low-value tests merely for the sake of test coverage.
+Run the slice's specified validation and the smallest relevant focused checks. Fix only failures caused by or within the scope of this slice, rerunning the affected checks afterward. Record unrelated or pre-existing failures accurately.
 
-## 4. Implement only the selected outcome
+If an essential check cannot run, do not mark the slice complete. A nonessential unavailable check may be recorded only when the remaining evidence fully verifies the outcome.
 
-Follow `SPEC.md` boundaries, interfaces, errors, and repository conventions. Preserve user changes and avoid later-slice work, unrelated cleanup/refactoring, intentionally incomplete horizontal layers, and comments that merely restate code.
+## 4. Record the result
 
-If an unrelated defect is found, report but do not fix it. If it blocks the slice, make only the smallest necessary fix and record it in `PLAN.md`.
+Update only the selected slice and directly affected progress in `PLAN.md`.
 
-## 5. Validate
+On success:
 
-Run the slice’s specified validation plus the smallest relevant focused tests.
+- mark its progress checkbox and status complete;
+- append concise completed-work and validation results;
+- record any deviation from the original notes and why it did not change the approved behavior or boundaries, or state `Deviations: None`.
 
-On failure, identify whether this slice caused it, fix only in-scope failures, rerun relevant checks, and accurately record unrelated/pre-existing failures. Do not run or repair unrelated expensive suites.
+If blocked or incomplete:
 
-If the environment prevents a check, run remaining useful checks and record exactly what was unavailable. Never call it successful. Do not complete the slice if the unavailable check is essential; a nonessential check may remain unavailable only when other evidence fully proves the outcome.
+- leave its checkbox unchecked and set its status to `Blocked` or `In progress`;
+- record partial work, the exact blocker or failure, and the required follow-up.
 
-## 6. Update only this slice in `PLAN.md`
+Do not rewrite the original plan to hide a deviation.
 
-Update its progress entry, section, and directly affected overall progress.
+## 5. Review and stop
 
-If all required validation passes:
+Inspect the complete diff. Remove accidental changes, confirm no later-slice or unrelated work slipped in, and verify that the implementation, focused tests, `SPEC.md`, and `PLAN.md` agree.
 
-- change `[ ]` to `[x]` and status to `Complete`;
-- append concise `Completed work`, `Validation results`, and `Deviations` records;
-- use `Deviations: None` when applicable;
-- otherwise state what changed from the notes, why, and why design/scope remain unchanged. Never rewrite the original plan to hide a deviation.
-
-If blocked, incomplete, or essential validation fails:
-
-- leave the checkbox unchecked and set `Blocked` or `In progress`;
-- record partial work, the exact blocker/failure, environmental versus code cause, and required decision/follow-up.
-
-## 7. Review and stop
-
-Inspect the complete diff and:
-
-- separate and preserve pre-existing changes; remove accidental changes;
-- confirm no later-slice or unrelated work slipped in;
-- confirm behavior-focused tests, required outcome/criteria, `SPEC.md`, and `PLAN.md` agree;
-
-Report the selected slice, changes, validation results, deviations/simplifications, blockers/risks/environment limits/unrelated discoveries, and the `PLAN.md` update. Then stop and wait for an explicit request for another pass.
+Report the selected slice, changes, validation, deviations, blockers or environment limits, unrelated discoveries, and the `PLAN.md` update. Then stop and wait for an explicit request for another slice.
