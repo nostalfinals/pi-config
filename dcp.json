@@ -1,5 +1,5 @@
 {
-  "minCompressContext": "100000",
-  "maxCompressContext": "120000",
+  "minCompressContext": 100000,
+  "maxCompressContext": 140000,
   "debugMarkerTrace": false
 }

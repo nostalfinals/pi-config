@@ -25,6 +25,7 @@
       "~/.git-credentials"
     ],
     "denyWrite": [],
+    "autoAllowGitWorktree": true,
     "allowWrite": [
       ".",
       "/tmp",

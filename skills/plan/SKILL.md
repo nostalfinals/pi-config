@@ -96,7 +96,7 @@ Derive the implementation plan from `SPEC.md` and the approved slices:
 - <decisions needed to follow the specification and repository conventions>
 
 **Validation**
-- `<exact command or check>` — <what it proves>
+- `<agent-executable command or check>` — <what it proves and any limitation>
 
 **Dependencies**
 - None.
@@ -104,6 +104,8 @@ Derive the implementation plan from `SPEC.md` and the approved slices:
 ## Final verification
 <checks that genuinely require all slices>
 ```
+
+Every required validation step must be executable autonomously by the implementation agent. Do not require human interaction, manual application or server operation, external approval, or unavailable credentials or infrastructure. When direct verification is not agent-executable, use the strongest feasible automated or static substitute and state its limitation; do not create a slice that the implementation agent can never complete.
 
 Keep `SPEC.md` and `PLAN.md` non-duplicative. Add slice-specific exclusions only when they prevent tempting adjacent work; do not repeat global non-goals in every slice.
 

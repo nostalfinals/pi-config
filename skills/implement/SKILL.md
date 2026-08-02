@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Implement exactly one unfinished, unblocked slice from `docs/agent-tasks/<short-purpose>/`. The user must explicitly identify the task; they may optionally identify a slice. If no slice is named, select the next actionable slice whose dependencies are complete.
 
-The workflow is AFK after task selection. Resolve minor details from the task documents and established repository conventions without asking the user. If a material decision is missing, contradicted, or invalidated, stop safely and report the blocker. Never continue to or prepare the next slice.
+The workflow is AFK after task selection. Resolve minor details from the task documents and established repository conventions without asking the user. Continue while actionable in-scope work remains. Stop only when the slice is complete or a specific material blocker makes further progress impossible without a user decision, additional authority, or an unavailable required dependency. Partial progress, elapsed effort, and unavailable optional or human-dependent checks are not blockers. Never continue to or prepare the next slice.
 
 ## Sources of truth
 
@@ -22,7 +22,7 @@ Before editing:
 2. Inspect the working tree and preserve unrelated changes.
 3. Select the named slice, or the next unfinished and unblocked slice if none was named.
 4. Inspect the relevant source and tests, trace current behavior, and confirm the slice still matches the codebase.
-5. Confirm its dependencies, scope, validation, and external requirements are available and that it fits one focused implementation session.
+5. Confirm its dependencies, scope, validation, and external requirements.
 
 If no slice is actionable, report why and stop.
 
@@ -46,22 +46,22 @@ Report unrelated defects without fixing them. If one blocks the slice, fix only 
 
 Run the slice's specified validation and the smallest relevant focused checks. Fix only failures caused by or within the scope of this slice, rerunning the affected checks afterward. Record unrelated or pre-existing failures accurately.
 
-If an essential check cannot run, do not mark the slice complete. A nonessential unavailable check may be recorded only when the remaining evidence fully verifies the outcome.
+If a planned check requires human involvement or cannot run in the available environment, continue implementation, run the strongest feasible substitute, and record the skipped check and resulting uncertainty. Never claim that the skipped check passed.
 
 ## 4. Record the result
 
 Update only the selected slice and directly affected progress in `PLAN.md`.
 
-On success:
+Treat the slice as complete when all required implementation work and all agent-executable validation are complete. Then:
 
 - mark its progress checkbox and status complete;
 - append concise completed-work and validation results;
 - record any deviation from the original notes and why it did not change the approved behavior or boundaries, or state `Deviations: None`.
 
-If blocked or incomplete:
+If genuinely blocked by one of the material stop conditions:
 
-- leave its checkbox unchecked and set its status to `Blocked` or `In progress`;
-- record partial work, the exact blocker or failure, and the required follow-up.
+- leave its checkbox unchecked and set its status to `Blocked`;
+- record completed and partial work, the exact blocker, and the decision, authority, or dependency required to continue.
 
 Do not rewrite the original plan to hide a deviation.
 
