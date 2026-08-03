@@ -17,7 +17,7 @@ Read repository instructions, inspect the working tree, and trace the relevant s
 
 ## 2. Align and approve
 
-Read and use the `grill-me` skill to resolve material requirements and design decisions with the user.
+Read and use the `grill-me` skill to resolve material requirements and design decisions with the user. If the conversation already contains settled alignment on the material requirements and design decisions—whether reached through `grill-me`, `grilling`, or another process—reuse it and proceed directly to the approval proposal.
 
 Then define small vertical slices around user-visible or domain-observable outcomes. Each slice must cover the smallest end-to-end path needed for its outcome and leave the codebase coherent and independently verifiable. Use an enabling slice only when no meaningful vertical outcome can be implemented first.
 
