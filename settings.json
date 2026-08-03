@@ -16,7 +16,13 @@
     },
     "git:github.com/nostalfinals/pi-sandbox",
     "git:github.com/nostalfinals/pi-dcp",
-    "git:https://github.com/nostalfinals/pi-codex-search"
+    "git:https://github.com/nostalfinals/pi-codex-search",
+    {
+      "source": "npm:@upstash/context7-pi",
+      "skills": [
+        "-skills/context7-docs/SKILL.md"
+      ]
+    }
   ],
   "terminal": {
     "showTerminalProgress": true
