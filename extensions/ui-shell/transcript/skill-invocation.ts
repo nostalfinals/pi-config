@@ -5,7 +5,7 @@ import {
   type Theme,
 } from "@earendil-works/pi-coding-agent";
 import { Markdown, Spacer, Text, type MarkdownTheme } from "@earendil-works/pi-tui";
-import { renderToolParameter } from "./tool-indicator";
+import { renderToolParameter } from "./tool-parameter";
 
 type SkillInvocationInternals = {
   expanded: boolean;
