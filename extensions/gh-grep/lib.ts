@@ -111,7 +111,7 @@ export function describeFilters(params: GrepAppParams): string {
   if (params.useRegexp) parts.push("regexp");
   if (params.matchCase) parts.push("case-sensitive");
   if (params.matchWholeWords) parts.push("whole words");
-  return parts.length > 0 ? ` [${parts.join(" | ")}]` : "";
+  return parts.length > 0 ? `(${parts.join(", ")})` : "";
 }
 
 /**
@@ -180,9 +180,9 @@ export async function searchGrepApp(
 
       let text: string;
       if (noResults) {
-        text = `grep.app: no results for "${params.query}"${describeFilters(params)}.`;
+        text = `grep.app: no results for "${params.query}" ${describeFilters(params)}.`;
       } else {
-        const header = `grep.app: ${total} result${total === 1 ? "" : "s"} for "${params.query}"${describeFilters(params)}`;
+        const header = `grep.app: ${total} result${total === 1 ? "" : "s"} for "${params.query}" ${describeFilters(params)}`;
         text = [header, "", ...blocks].join("\n");
         if (blocks.length < total) {
           text += `\n\n(${total - blocks.length} more results omitted; narrow the query or add filters)`;

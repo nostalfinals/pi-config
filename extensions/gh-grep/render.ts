@@ -14,7 +14,7 @@ export function renderGrepCall(args: GrepAppParams, theme: Theme): Component {
   const filters = describeFilters(args);
   const text =
     theme.fg("toolTitle", theme.bold("gh_grep")) +
-    (query ? ` ${theme.fg("muted", query)}` : "") +
+    (query ? ` ${theme.fg("accent", query)}` : "") +
     (filters ? ` ${theme.fg("muted", filters)}` : "");
 
   return {
