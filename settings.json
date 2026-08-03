@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.82.1",
+  "lastChangelogVersion": "0.83.0",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "deepseek",
@@ -7,11 +7,16 @@
   "defaultThinkingLevel": "max",
   "hideThinkingBlock": true,
   "packages": [
-    "npm:pi-mcp-adapter",
     "npm:pi-compact-thinking",
-    "npm:@juicesharp/rpiv-ask-user-question",
+    {
+      "source": "npm:@juicesharp/rpiv-ask-user-question",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "git:github.com/nostalfinals/pi-sandbox",
-    "git:github.com/nostalfinals/pi-dcp"
+    "git:github.com/nostalfinals/pi-dcp",
+    "git:https://github.com/nostalfinals/pi-codex-search"
   ],
   "terminal": {
     "showTerminalProgress": true

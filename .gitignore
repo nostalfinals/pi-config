@@ -1,42 +1,24 @@
-# This directory mixes source/configuration with credentials and runtime state.
-# Ignore every root-level entry by default, then explicitly allow only files
-# intended for version control.
 /*
-
-# Repository metadata and bootstrap files
 !/.gitignore
-!/README.md
-!/setup.sh
-!/package.json
-!/package-lock.json
 
-# Pi context and prompt configuration
 !/AGENTS.md
 !/SYSTEM.md
 !/APPEND_SYSTEM.md
 
-# User-maintained Pi resources
 !/extensions/
-!/extensions/**
 !/skills/
-!/skills/**
 !/prompts/
-!/prompts/**
 !/themes/
-!/themes/**
 !/agents/
-!/agents/**
 
-# Stable personal settings
 !/settings.json
 !/keybindings.json
 !/compact-thinking.json
 !/dcp.json
 !/model-preset.json
 !/sandbox.json
+!/codex-search.json
 
-# Local dependencies, environments, generated files, and secrets inside any
-# otherwise tracked resource directory
 **/node_modules/
 **/.venv/
 **/__pycache__/
@@ -47,6 +29,5 @@
 **/*.local.json
 **/*.log
 
-# OS/editor state
 **/.DS_Store
 **/Thumbs.db
