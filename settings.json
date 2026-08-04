@@ -8,12 +8,6 @@
   "hideThinkingBlock": true,
   "packages": [
     "npm:pi-compact-thinking",
-    {
-      "source": "npm:@juicesharp/rpiv-ask-user-question",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "git:github.com/nostalfinals/pi-sandbox",
     "git:github.com/nostalfinals/pi-dcp",
     "git:https://github.com/nostalfinals/pi-codex-search",
