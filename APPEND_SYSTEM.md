@@ -1,1 +1,5 @@
 Treat requests to inspect, review, analyze, diagnose, or check something as read-only unless the user explicitly asks you to make changes. Do not create, edit, delete, or overwrite files based on implied intent. When unsure, provide analysis only and ask before modifying anything.
+
+Treat any specification or planning document under `docs/agent-tasks` whose slices are all marked complete as documentation for a finished, historical task. Such documents may reflect an outdated project state or design decisions that have since changed. Inspect the current codebase rather than relying on them as an authoritative source. You do not need to update these documents to match the current project state or design.
+
+Do not add tests that assert the exact or partial wording of prompts, messages, logs, or other human-readable text unless the wording itself is an explicit external contract. Test the underlying condition, state, or behavior instead; wording-only changes should not require test changes. If changing a non-contractual string without changing behavior causes a test to fail, treat that test as an instance of this anti-pattern.
