@@ -108,7 +108,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
   let activeUi: ToolInternals["ui"] | undefined;
   let animationTimer: ReturnType<typeof setInterval> | undefined;
   let animationFrame = 0;
-  let patchInstalled = true;
+  let patchInstalled = false;
 
   const stopAnimation = () => {
     if (animationTimer) clearInterval(animationTimer);
@@ -140,7 +140,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
     if (pendingComponents.size === 0) stopAnimation();
   };
 
-  prototype.getCallRenderer = function getCallRendererWithStyledBash() {
+  function getCallRendererWithStyledBash(this: ToolExecutionComponent) {
     const originalRenderer = originalGetCallRenderer.call(this);
     const self = this as unknown as ToolInternals;
 
@@ -179,9 +179,10 @@ export function installToolIndicators(pi: ExtensionAPI) {
         0,
       );
     };
-  };
+  }
 
-  prototype.updateResult = function updateResultWithIndicator(
+  function updateResultWithIndicator(
+    this: ToolExecutionComponent,
     result: { isError: boolean },
     isPartial?: boolean,
   ) {
@@ -190,9 +191,9 @@ export function installToolIndicators(pi: ExtensionAPI) {
     // off-screen and never renders again. Remove it immediately so a stale
     // component cannot keep the animation timer alive.
     updatePendingState(this);
-  };
+  }
 
-  prototype.render = function renderWithIndicator(width: number) {
+  function renderWithIndicator(this: ToolExecutionComponent, width: number) {
     const lines = originalRender.call(this, width);
     const self = this as unknown as ToolInternals;
     const pending = !self.result || self.isPartial;
@@ -242,14 +243,19 @@ export function installToolIndicators(pi: ExtensionAPI) {
       "",
     );
     return lines;
-  };
+  }
 
   pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
     stopAnimation();
     pendingComponents.clear();
     activeUi = undefined;
-    activeTheme = ctx.mode === "tui" ? ctx.ui.theme : undefined;
+    activeTheme = ctx.ui.theme;
     animationFrame = 0;
+    prototype.render = renderWithIndicator;
+    prototype.getCallRenderer = getCallRendererWithStyledBash;
+    prototype.updateResult = updateResultWithIndicator;
+    patchInstalled = true;
   });
 
   pi.on("session_shutdown", () => {

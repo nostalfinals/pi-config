@@ -131,7 +131,7 @@ export default function uiShell(pi: ExtensionAPI) {
     event.signal.addEventListener("abort", finishCompaction, { once: true });
   });
   pi.on("session_compact", finishCompaction);
-  pi.on("agent_end", () => {
+  pi.on("agent_settled", () => {
     if (!compactionActive) interruptController?.clear();
   });
 

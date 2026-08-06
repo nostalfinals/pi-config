@@ -21,9 +21,9 @@ export function installCompactionStatus(pi: ExtensionAPI) {
   const originalRender = prototype.render;
   const states = new WeakMap<Loader, CompactionState>();
   let activeTheme: Theme | undefined;
-  let patchInstalled = true;
+  let patchInstalled = false;
 
-  prototype.render = function renderCompactionStatus(width: number) {
+  function renderCompactionStatus(this: Loader, width: number) {
     const self = this as CompactionLoader;
 
     if (self.kind === "compaction" && activeTheme) {
@@ -46,10 +46,13 @@ export function installCompactionStatus(pi: ExtensionAPI) {
     }
 
     return originalRender.call(this, width);
-  };
+  }
 
   pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
     activeTheme = ctx.ui.theme;
+    prototype.render = renderCompactionStatus;
+    patchInstalled = true;
   });
 
   pi.on("session_shutdown", () => {

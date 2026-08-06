@@ -25,15 +25,15 @@ export function installCompactionSummary(pi: ExtensionAPI) {
   const prototype = CompactionSummaryMessageComponent.prototype as unknown as CompactionSummaryPrototype;
   const originalUpdateDisplay = prototype.updateDisplay;
   let activeTheme: Theme | undefined;
-  let patchInstalled = true;
+  let patchInstalled = false;
 
-  prototype.updateDisplay = function updateCompactionSummary() {
+  function updateCompactionSummary(this: CompactionSummaryMessageComponent) {
     if (!activeTheme) {
       originalUpdateDisplay.call(this);
       return;
     }
 
-    const self = this as CompactionSummaryInternals;
+    const self = this as unknown as CompactionSummaryInternals;
     const theme = activeTheme;
     self.clear();
 
@@ -68,10 +68,13 @@ export function installCompactionSummary(pi: ExtensionAPI) {
         0,
       ),
     );
-  };
+  }
 
   pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
     activeTheme = ctx.ui.theme;
+    prototype.updateDisplay = updateCompactionSummary;
+    patchInstalled = true;
   });
 
   pi.on("session_shutdown", () => {

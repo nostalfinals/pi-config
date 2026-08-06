@@ -27,14 +27,13 @@ export function installWorkingStatus(pi: ExtensionAPI) {
   }
 
   pi.on("agent_start", (_event, ctx) => {
-    stop();
-    if (ctx.mode !== "tui") return;
+    if (ctx.mode !== "tui" || startedAt !== undefined) return;
     activeContext = ctx;
     startedAt = Date.now();
     update();
     timer = setInterval(update, 1_000);
   });
 
-  pi.on("agent_end", stop);
+  pi.on("agent_settled", stop);
   pi.on("session_shutdown", stop);
 }

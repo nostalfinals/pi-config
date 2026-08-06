@@ -49,7 +49,8 @@ export function installResponseStats(pi: ExtensionAPI) {
     streamStart = null;
   }
 
-  pi.on("agent_start", () => {
+  pi.on("agent_start", (_event, ctx) => {
+    if (ctx.mode !== "tui" || agentStartedAt !== null) return;
     agentStartedAt = Date.now();
     totalOutputTokens = 0;
     totalStreamMs = 0;
@@ -87,19 +88,21 @@ export function installResponseStats(pi: ExtensionAPI) {
     resetMessage();
   });
 
-  pi.on("agent_end", (_event, ctx) => {
-    if (ctx.mode !== "tui" || totalOutputTokens <= 0 || totalStreamMs <= 0) {
-      return;
+  pi.on("agent_settled", (_event, ctx) => {
+    if (ctx.mode === "tui" && totalOutputTokens > 0 && totalStreamMs > 0) {
+      const elapsedMs = agentStartedAt === null
+        ? totalStreamMs
+        : Math.max(0, Date.now() - agentStartedAt);
+      pi.appendEntry<ResponseStatsEntryData>(RESPONSE_STATS_ENTRY_TYPE, {
+        outputTokens: totalOutputTokens,
+        streamMs: totalStreamMs,
+        elapsedMs,
+      });
     }
 
-    const elapsedMs = agentStartedAt === null
-      ? totalStreamMs
-      : Math.max(0, Date.now() - agentStartedAt);
-    pi.appendEntry<ResponseStatsEntryData>(RESPONSE_STATS_ENTRY_TYPE, {
-      outputTokens: totalOutputTokens,
-      streamMs: totalStreamMs,
-      elapsedMs,
-    });
     agentStartedAt = null;
+    totalOutputTokens = 0;
+    totalStreamMs = 0;
+    resetMessage();
   });
 }

@@ -133,9 +133,9 @@ class Context7ResultComponent implements Component {
 export function installContext7OutputCollapse(pi: ExtensionAPI) {
   const prototype = ToolExecutionComponent.prototype as unknown as PatchedPrototype;
   const originalGetResultRenderer = prototype.getResultRenderer;
-  let patchInstalled = true;
+  let patchInstalled = false;
 
-  prototype.getResultRenderer = function getContext7ResultRenderer() {
+  function getContext7ResultRenderer(this: ToolExecutionComponent): ResultRenderer | undefined {
     const originalRenderer = originalGetResultRenderer.call(this);
     const self = this as unknown as ToolInternals;
     if (!CONTEXT7_TOOL_NAMES.has(self.toolName)) return originalRenderer;
@@ -147,7 +147,13 @@ export function installContext7OutputCollapse(pi: ExtensionAPI) {
       component.setResult(getTextOutput(result), options, theme, context.isError);
       return component;
     };
-  };
+  }
+
+  pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
+    prototype.getResultRenderer = getContext7ResultRenderer;
+    patchInstalled = true;
+  });
 
   pi.on("session_shutdown", () => {
     if (patchInstalled) {

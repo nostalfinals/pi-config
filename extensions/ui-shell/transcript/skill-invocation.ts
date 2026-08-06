@@ -26,9 +26,9 @@ export function installSkillInvocationStyle(pi: ExtensionAPI) {
   const prototype = SkillInvocationMessageComponent.prototype as unknown as SkillInvocationPrototype;
   const originalUpdateDisplay = prototype.updateDisplay;
   let activeTheme: Theme | undefined;
-  let patchInstalled = true;
+  let patchInstalled = false;
 
-  prototype.updateDisplay = function updateStyledSkillInvocation() {
+  function updateStyledSkillInvocation(this: SkillInvocationMessageComponent) {
     if (!activeTheme) {
       originalUpdateDisplay.call(this);
       return;
@@ -61,10 +61,13 @@ export function installSkillInvocationStyle(pi: ExtensionAPI) {
         0,
       ),
     );
-  };
+  }
 
   pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
     activeTheme = ctx.ui.theme;
+    prototype.updateDisplay = updateStyledSkillInvocation;
+    patchInstalled = true;
   });
 
   pi.on("session_shutdown", () => {
