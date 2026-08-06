@@ -18,6 +18,8 @@
 !/model-preset.json
 !/sandbox.json
 !/codex-search.json
+!/cooperate/
+cooperate/sessions/
 
 **/node_modules/
 **/.venv/
@@ -28,6 +30,7 @@
 **/auth.json
 **/*.local.json
 **/*.log
+**/cooperate/sessions/
 
 **/.DS_Store
 **/Thumbs.db

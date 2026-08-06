@@ -9,14 +9,23 @@
   "packages": [
     "npm:pi-compact-thinking",
     "git:github.com/nostalfinals/pi-sandbox",
-    "git:github.com/nostalfinals/pi-dcp",
+    {
+      "source": "git:github.com/nostalfinals/pi-dcp",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "git:https://github.com/nostalfinals/pi-codex-search",
     {
       "source": "npm:@upstash/context7-pi",
       "skills": [
         "-skills/context7-docs/SKILL.md"
+      ],
+      "prompts": [
+        "-prompts/c7-docs.md"
       ]
-    }
+    },
+    "git:github.com/nostalfinals/cooperate@181d865"
   ],
   "terminal": {
     "showTerminalProgress": true
