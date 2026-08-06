@@ -7,7 +7,6 @@
   "defaultThinkingLevel": "max",
   "hideThinkingBlock": true,
   "packages": [
-    "npm:pi-compact-thinking",
     "git:github.com/nostalfinals/pi-sandbox",
     {
       "source": "git:github.com/nostalfinals/pi-dcp",
@@ -25,7 +24,8 @@
         "-prompts/c7-docs.md"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@fee8741"
+    "git:github.com/nostalfinals/cooperate@35d0c1afe546f7abab1d19d7ab2417de10488e5a",
+    "npm:pi-compact-thinking"
   ],
   "terminal": {
     "showTerminalProgress": true
