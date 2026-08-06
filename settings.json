@@ -25,7 +25,7 @@
         "-prompts/c7-docs.md"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@181d865"
+    "git:github.com/nostalfinals/cooperate@fee8741"
   ],
   "terminal": {
     "showTerminalProgress": true
