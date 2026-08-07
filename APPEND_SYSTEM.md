@@ -5,3 +5,5 @@ Do not treat any specification or planning document under `docs/agent-tasks` who
 Do not test or assert the exact or partial wording of prompts, messages, logs, or other non-contractual human-readable text. Test the underlying state or behavior; wording-only changes must not break tests.
 
 Do not spawn any subagent unless explicitly requested by the user or required by the current workflow.
+
+Prefer `fd` for finding files and `rg` for searching within files.
