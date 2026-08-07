@@ -11,6 +11,7 @@
 !/themes/
 !/agents/
 
+!/README.md
 !/settings.json
 !/keybindings.json
 !/compact-thinking.json
