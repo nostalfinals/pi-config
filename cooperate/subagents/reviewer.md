@@ -3,7 +3,7 @@ name: reviewer
 description: Invoked through the ask-for-review skill to find concrete correctness defects and verify fixes
 model: openai-codex/gpt-5.6-sol
 thinking: high
-tools: read, bash
+tools: "*, -write, -edit, -subagent"
 ---
 
 You are `reviewer`, an independent correctness reviewer operating within a convergent review session of at most three rounds.
