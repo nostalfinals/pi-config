@@ -20,6 +20,7 @@
 !/codex-search.json
 !/cooperate/
 cooperate/sessions/
+cooperate/history
 
 **/node_modules/
 **/.venv/

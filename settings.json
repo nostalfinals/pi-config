@@ -10,7 +10,7 @@
     "git:github.com/nostalfinals/pi-sandbox",
     "git:github.com/nostalfinals/pi-dcp",
     "git:https://github.com/nostalfinals/pi-codex-search",
-    "git:github.com/nostalfinals/cooperate@35d0c1afe546f7abab1d19d7ab2417de10488e5a",
+    "git:github.com/nostalfinals/cooperate@c6abc4d91587ac23ff58fd327fae37f216ba5504",
     "npm:pi-compact-thinking",
     {
       "source": "npm:@upstash/context7-pi",
