@@ -8,6 +8,8 @@ A personal collection of Pi configurations and extensions.
 >
 > It also includes several forks of third-party extensions that I maintain specifically for this setup.
 
+![Preview](./assets/preview.png)
+
 ## Skill credits
 
 Some of the skills in the `skills/` directory are sourced from [mattpocock/skills](https://github.com/mattpocock/skills) and may have been modified by me.
