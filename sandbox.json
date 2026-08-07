@@ -8,7 +8,8 @@
     "disableMandatoryProtections": true,
     "denyRead": [
       "~",
-      "~/.pi/agent/auth.json"
+      "~/.pi/agent/auth.json",
+      "/mnt"
     ],
     "allowRead": [
       ".",
