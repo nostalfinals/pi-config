@@ -2,19 +2,16 @@
   "lastChangelogVersion": "0.84.0",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "max",
   "hideThinkingBlock": true,
   "packages": [
     "git:github.com/nostalfinals/pi-sandbox",
-    {
-      "source": "git:github.com/nostalfinals/pi-dcp",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
+    "git:github.com/nostalfinals/pi-dcp",
     "git:https://github.com/nostalfinals/pi-codex-search",
+    "git:github.com/nostalfinals/cooperate@35d0c1afe546f7abab1d19d7ab2417de10488e5a",
+    "npm:pi-compact-thinking",
     {
       "source": "npm:@upstash/context7-pi",
       "skills": [
@@ -23,9 +20,7 @@
       "prompts": [
         "-prompts/c7-docs.md"
       ]
-    },
-    "git:github.com/nostalfinals/cooperate@35d0c1afe546f7abab1d19d7ab2417de10488e5a",
-    "npm:pi-compact-thinking"
+    }
   ],
   "terminal": {
     "showTerminalProgress": true
