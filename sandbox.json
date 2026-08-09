@@ -34,7 +34,9 @@
       "~/.gradle",
       "~/.m2/repository",
       "~/.npm",
-      "~/.pi/agent"
+      "~/.pi/agent",
+      "~/.cargo",
+      "~/.rustup"
     ]
   }
 }
