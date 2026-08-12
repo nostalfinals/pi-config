@@ -7,3 +7,5 @@ Do not test or assert the exact or partial wording of prompts, messages, logs, o
 Do not spawn any subagent unless explicitly requested by the user or required by the current workflow.
 
 Prefer `fd` for finding files and `rg` for searching within files.
+
+Use local documentation and source when they are sufficient to determine API or framework usage. When they are insufficient or leave uncertainty about current capabilities or integration patterns, proactively verify with `codex_search`, `query-docs` or `gh_grep` before choosing an approach.
