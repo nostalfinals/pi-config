@@ -58,9 +58,7 @@ export function installFooter(
         const contextFull = [
           theme.fg("dim", "ctx"),
           contextPercent,
-          theme.fg("dim", "·"),
           contextTokens,
-          cost,
         ].filter(Boolean).join(" ");
         const contextCompact = `${theme.fg("dim", "ctx")} ${contextPercent}`;
         const cacheHitRate = getLatestCacheHitRate(ctx);
@@ -103,14 +101,15 @@ export function installFooter(
         const modelCompact = theme.fg("muted", model?.id ?? "no-model");
 
         const candidates = [
-          { left: join([workspace, contextFull, cacheHit, ...statuses, expanded]), right: modelFull },
-          { left: join([workspaceWithoutPr, contextFull, cacheHit, expanded]), right: modelFull },
-          { left: join([workspaceWithoutPr, contextCompact, cacheHit, expanded]), right: modelFull },
+          { left: join([workspace, contextFull, cacheHit, cost, ...statuses, expanded]), right: modelFull },
+          { left: join([workspaceWithoutPr, contextFull, cacheHit, cost, expanded]), right: modelFull },
+          { left: join([workspaceWithoutPr, contextCompact, cacheHit, cost, expanded]), right: modelFull },
           {
             left: join([
               gitInfo.branch ? theme.fg("muted", gitInfo.branch) : workspaceParts[0]!,
               contextPercent,
               cacheHit,
+              cost,
               expanded,
             ]),
             right: modelCompact,
