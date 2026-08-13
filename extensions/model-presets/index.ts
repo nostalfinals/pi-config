@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { registerEditorInputInterceptor } from "../ui-shell/editor/input-interceptors";
+import { registerEditorInputInterceptor } from "../ui/editor/input-interceptors";
 import { CONFIG_PATH, loadConfig, type ModelPreset } from "./config";
 import { displayModel, selectModelPreset } from "./selector";
 

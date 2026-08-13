@@ -12,7 +12,6 @@ export function installFooter(
   pi: ExtensionAPI,
   ctx: ExtensionContext,
   getGitInfo: () => GitInfo,
-  getMcpConnectedCount: () => number,
   getToolsExpanded: () => boolean,
   setRequestRender: (requestRender: () => void) => void,
 ) {
@@ -35,11 +34,6 @@ export function installFooter(
           ? `(${model.provider}) ${model.id} • ${model.reasoning ? pi.getThinkingLevel() : "off"}`
           : "no-model";
         const statsParts = [`${contextTokens} (${contextPercent})`];
-        const mcpConnectedCount = getMcpConnectedCount();
-        if (mcpConnectedCount > 0) {
-          const label = mcpConnectedCount === 1 ? "MCP" : "MCPs";
-          statsParts.push(`${mcpConnectedCount} ${label}`);
-        }
         // OAuth-backed providers are treated as subscription plans; metered
         // API-key providers retain the estimated session cost.
         if (model && !ctx.modelRegistry.isUsingOAuth(model)) {
@@ -50,7 +44,7 @@ export function installFooter(
         if (getToolsExpanded()) statsParts.push("expanded");
         const stats = statsParts.join(" • ");
         const statuses = Array.from(footerData.getExtensionStatuses().entries())
-          .filter(([key]) => key !== "mcp" && key !== "sandbox")
+          .filter(([key]) => key !== "sandbox")
           .sort(([a], [b]) => a.localeCompare(b))
           .flatMap(([, text]) => text.split("\n"))
           .filter(Boolean);

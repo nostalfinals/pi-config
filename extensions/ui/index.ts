@@ -8,7 +8,6 @@ import { applyEditorInputInterceptors } from "./editor/input-interceptors";
 import { applyPromptEditorStyle } from "./editor/prompt-style";
 import { installFooter } from "./footer";
 import { refreshGit } from "./footer/git";
-import { installMcpStatus } from "./footer/mcp-status";
 import type { GitInfo } from "./footer/types";
 import { emptyGitInfo } from "./footer/types";
 import { installCompactionStatus } from "./status/compaction";
@@ -28,7 +27,6 @@ export default function uiShell(pi: ExtensionAPI) {
   let generation = 0;
   let refreshRunning = false;
   let gitInfo = emptyGitInfo();
-  let mcpConnectedCount = 0;
   let toolsExpanded = false;
   let compactionActive = false;
   let interruptController: ConfirmInterruptController<CustomEditor> | undefined;
@@ -49,10 +47,6 @@ export default function uiShell(pi: ExtensionAPI) {
   installSkillInvocationStyle(pi);
   installToolIndicators(pi);
   installWorkingStatus(pi);
-  installMcpStatus(pi, (connectedCount) => {
-    mcpConnectedCount = connectedCount;
-    scheduleRender();
-  });
 
   async function refreshGitState(ctx: ExtensionContext, force = false) {
     if (refreshRunning && !force) return;
@@ -83,7 +77,6 @@ export default function uiShell(pi: ExtensionAPI) {
       pi,
       ctx,
       () => gitInfo,
-      () => mcpConnectedCount,
       () => toolsExpanded,
       (nextRequestRender) => {
         requestRender = nextRequestRender;
