@@ -371,7 +371,7 @@ function renderUserMessage(component: Container, width: number, theme: Theme) {
       : line;
     const row = truncateToWidth(` ${trimRenderedLine(content)}`, width, "");
     const padded = `${row}${" ".repeat(Math.max(0, width - visibleWidth(row)))}`;
-    return theme.bg("selectedBg", padded);
+    return theme.bg("userMessageBg", padded);
   });
   if (hasZoneStart) lines[0] = `${OSC133_ZONE_START}${lines[0]}`;
   const suffix = `${hasZoneEnd ? OSC133_ZONE_END : ""}${hasZoneFinal ? OSC133_ZONE_FINAL : ""}`;

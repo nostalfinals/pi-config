@@ -43,7 +43,7 @@
     "text": "text",
     "thinkingText": "overlay1",
     "selectedBg": "surface0",
-    "userMessageBg": "mantle",
+    "userMessageBg": "surface0",
     "userMessageText": "text",
     "customMessageBg": "mantle",
     "customMessageText": "text",
