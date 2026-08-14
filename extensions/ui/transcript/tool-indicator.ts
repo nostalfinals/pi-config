@@ -60,23 +60,21 @@ function isSkillRead(toolName: string, args: unknown) {
   return typeof path === "string" && /(?:^|[\\/])SKILL\.md$/u.test(path);
 }
 
-function withToolCallTheme(theme: Theme, skillRead: boolean): Theme {
+function withToolCallTheme(theme: Theme, skillRead: boolean, replaceParameters: boolean): Theme {
+  if (!skillRead && !replaceParameters) return theme;
   return new Proxy(theme, {
     get(target, property, receiver) {
       if (property === "fg") {
         return (role: Parameters<Theme["fg"]>[0], text: string) => {
-          if (skillRead) {
-            if (role === "customMessageLabel") {
-              return `${target.fg("toolTitle", target.bold("skill"))} `;
-            }
-            if (role === "customMessageText" || role === "accent") {
-              return renderToolParameter(target, text);
-            }
-            if (role === "dim") return target.fg("muted", text);
+          if (skillRead && role === "customMessageLabel") {
+            return `${target.fg("toolTitle", target.bold("skill"))} `;
           }
-          return role === "accent"
-            ? renderToolParameter(target, text)
-            : target.fg(role, text);
+          if (replaceParameters && skillRead && role === "customMessageText") {
+            return renderToolParameter(target, text);
+          }
+          if (replaceParameters && role === "accent") return renderToolParameter(target, text);
+          if (skillRead && role === "dim") return target.fg("muted", text);
+          return target.fg(role, text);
         };
       }
       const value = Reflect.get(target, property, receiver);
@@ -105,6 +103,44 @@ function removeVisibleExpandHint(line: string) {
   return sliceByColumn(line, 0, visibleWidth(plain.slice(0, match.index)), true);
 }
 
+type PathElision = {
+  prefixWidth: number;
+  suffixStart: number;
+};
+
+function elidePathAtMiddle(path: string, maxWidth: number): PathElision | undefined {
+  if (visibleWidth(path) <= maxWidth) return undefined;
+
+  const segments = path.split("/");
+  if (segments.length < 3) return undefined;
+
+  // Replace whole middle path segments only. This keeps both displayed ends
+  // navigable and avoids producing partial directory names such as ".../ent/".
+  let removeStart = Math.max(1, Math.floor(segments.length / 2));
+  let removeEnd = removeStart + 1;
+  while (removeEnd < segments.length) {
+    const prefix = segments.slice(0, removeStart).join("/");
+    const suffix = segments.slice(removeEnd).join("/");
+    const abbreviated = prefix ? `${prefix}/.../${suffix}` : `/.../${suffix}`;
+    if (visibleWidth(abbreviated) <= maxWidth) {
+      return {
+        prefixWidth: visibleWidth(prefix),
+        suffixStart: visibleWidth(path) - visibleWidth(suffix),
+      };
+    }
+
+    const canExpandLeft = removeStart > 1;
+    const canExpandRight = removeEnd < segments.length - 1;
+    if (!canExpandLeft && !canExpandRight) break;
+    if (canExpandLeft && (!canExpandRight || removeStart - 1 >= segments.length - removeEnd - 1)) {
+      removeStart -= 1;
+    } else {
+      removeEnd += 1;
+    }
+  }
+  return undefined;
+}
+
 function shortenMiddle(line: string, width: number) {
   if (width <= 0) return "";
   if (visibleWidth(line) <= width) return line;
@@ -112,14 +148,37 @@ function shortenMiddle(line: string, width: number) {
 
   const plain = stripAnsi(line);
   const firstSpace = plain.indexOf(" ");
+  const titleWidth = firstSpace < 0 ? 0 : firstSpace + 1;
+  const parameter = firstSpace < 0 ? "" : plain.slice(titleWidth);
+  const firstSlash = parameter.indexOf("/");
+  if (firstSlash >= 0) {
+    const pathOffset = parameter.lastIndexOf(" ", firstSlash) + 1;
+    const beforePath = parameter.slice(0, pathOffset);
+    const path = parameter.slice(pathOffset);
+    const pathStart = titleWidth + visibleWidth(beforePath);
+    const elision = elidePathAtMiddle(path, width - pathStart);
+    if (elision) {
+      const total = visibleWidth(line);
+      const prefixEnd = pathStart + elision.prefixWidth;
+      const suffixStart = pathStart + elision.suffixStart;
+      return `${sliceByColumn(line, 0, prefixEnd, true)}/.../${sliceByColumn(line, suffixStart, total - suffixStart, true)}`;
+    }
+  }
+
+  const marker = "…";
   const prefixWidth = Math.min(
-    width - 2,
-    Math.max(1, firstSpace < 0 ? Math.ceil(width / 2) : firstSpace + 1),
+    width - marker.length - 1,
+    Math.max(1, titleWidth || Math.ceil(width / 2)),
   );
-  const tailWidth = width - prefixWidth - 1;
-  if (tailWidth <= 0) return truncateToWidth(line, width, "…");
+  const tailWidth = width - prefixWidth - marker.length;
+  if (tailWidth <= 0) return truncateToWidth(line, width, marker);
   const total = visibleWidth(line);
-  return `${sliceByColumn(line, 0, prefixWidth, true)}…${sliceByColumn(line, total - tailWidth, total, true)}`;
+  return `${sliceByColumn(line, 0, prefixWidth, true)}${marker}${sliceByColumn(line, total - tailWidth, tailWidth, true)}`;
+}
+
+function unwrappedText(component: Component | undefined) {
+  const text = (component as { text?: unknown } | undefined)?.text;
+  return typeof text === "string" && !text.includes("\n") ? text : undefined;
 }
 
 function composeHeader(
@@ -184,7 +243,7 @@ function compactSummary(self: ToolInternals) {
       ? Number(range[2]) - Number(range[1]) + 1
       : lineCountWithoutNotice(output));
     const total = range ? Number(range[3]) : undefined;
-    if (total !== undefined) return `${shown}/${total} ${total === 1 ? "line" : "lines"}`;
+    if (total !== undefined) return `${shown} of ${total} ${total === 1 ? "line" : "lines"}`;
     return plural(shown, "line");
   }
   if (self.toolName === "grep") {
@@ -216,7 +275,7 @@ function writeSummary(args: any) {
   return plural(countTextLines(args.content), "line");
 }
 
-function editSummary(self: ToolInternals) {
+function editSummary(self: ToolInternals, theme: Theme) {
   const edits = Array.isArray(self.args?.edits)
     ? self.args.edits
     : typeof self.args?.oldText === "string" && typeof self.args?.newText === "string"
@@ -229,7 +288,7 @@ function editSummary(self: ToolInternals) {
   const diff = typeof resultDiff === "string" ? resultDiff : previewDiff;
   if (typeof diff !== "string") return blockText;
   const { added, removed } = countEditDiff(diff);
-  return `${blockText} +${added} −${removed}`;
+  return `${blockText} ${theme.fg("toolDiffAdded", `+${added}`)} ${theme.fg("toolDiffRemoved", `−${removed}`)}`;
 }
 
 function bashSummary(self: ToolInternals) {
@@ -237,7 +296,10 @@ function bashSummary(self: ToolInternals) {
   if (startedAt === undefined) return undefined;
   const end = (self.rendererState?.endedAt as number | undefined) ?? Date.now();
   const duration = `${((end - startedAt) / 1000).toFixed(1)}s`;
-  return `${!self.result || self.isPartial ? "elapsed" : "took"} ${duration}`;
+  const timeout = typeof self.args?.timeout === "number" && self.args.timeout > 0
+    ? ` · timeout ${self.args.timeout}s`
+    : "";
+  return `${!self.result || self.isPartial ? "elapsed" : "took"} ${duration}${timeout}`;
 }
 
 function removeBashTiming(lines: string[]) {
@@ -256,14 +318,10 @@ function renderBashCommand(args: any, theme: Theme, width: number) {
     : args?.command == null
       ? "..."
       : "[invalid arg]";
-  let styled = typeof args?.command === "string"
+  const styled = typeof args?.command === "string"
     ? renderToolParameter(theme, command)
     : theme.fg("error", command);
-  if (typeof args?.timeout === "number" && args.timeout > 0) {
-    styled += theme.fg("muted", ` (timeout ${args.timeout}s)`);
-  }
-  const wrapped = wrapTextWithAnsi(styled, Math.max(1, width - 2));
-  return wrapped.map((line, index) => `${index === 0 ? "$ " : "  "}${line}`);
+  return wrapTextWithAnsi(styled, Math.max(1, width - 2));
 }
 
 function removeCardBackgrounds(lines: string[], theme: Theme) {
@@ -345,7 +403,6 @@ type ToolInternals = {
   result?: ToolResult;
   rendererState: any;
   executionStarted: boolean;
-  argsComplete: boolean;
   callRendererComponent?: Component;
   resultRendererComponent?: Component;
   imageComponents: Component[];
@@ -380,6 +437,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
   const originalContainerRender = containerPrototype.render;
   const originalContainerInvalidate = containerPrototype.invalidate;
   const renderedKinds = new WeakMap<ToolExecutionComponent, TranscriptToolKind>();
+  const transcriptContainers = new WeakSet<Container>();
   const userRenderCache = new WeakMap<Container, {
     width: number;
     outputPad: number;
@@ -388,6 +446,8 @@ export function installToolIndicators(pi: ExtensionAPI) {
   }>();
   const settledRenderCache = new WeakMap<ToolExecutionComponent, {
     width: number;
+    args: unknown;
+    result: ToolResult;
     expanded: boolean;
     callComponent: Component | undefined;
     resultComponent: Component | undefined;
@@ -413,7 +473,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
         : rest;
       return originalRenderer(
         args,
-        withToolCallTheme(theme, isSkillRead(self.toolName, args)),
+        withToolCallTheme(theme, isSkillRead(self.toolName, args), true),
         ...rendererRest,
       );
     };
@@ -431,6 +491,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
       const parameterTheme = withToolCallTheme(
         theme,
         isSkillRead(self.toolName, context.args),
+        false,
       );
       return originalRenderer(
         result,
@@ -445,6 +506,23 @@ export function installToolIndicators(pi: ExtensionAPI) {
     const self = this as unknown as ToolInternals;
     if (!activeTheme || width <= 0 || self.hideComponent) return originalRender.call(this, width);
 
+    // A restored session never calls setArgsComplete() on historical tool rows.
+    // Check the settled cache before doing any result scans or renderer work so
+    // those rows remain O(1) on every keypress and streaming update.
+    const cached = settledRenderCache.get(this);
+    if (
+      cached &&
+      cached.width === width &&
+      cached.args === self.args &&
+      cached.result === self.result &&
+      cached.expanded === self.expanded &&
+      cached.callComponent === self.callRendererComponent &&
+      cached.resultComponent === self.resultRendererComponent &&
+      cached.theme === activeTheme
+    ) {
+      return cached.lines;
+    }
+
     // Explicit self-shell tools own their internals. Edit is the one agreed built-in exception.
     if (self.getRenderShell() === "self" && self.toolName !== "edit") {
       const lines = originalRender.call(this, width);
@@ -455,30 +533,17 @@ export function installToolIndicators(pi: ExtensionAPI) {
       return lines;
     }
 
-    // Pi redraws the complete transcript for every keypress. Settled built-in
-    // rows are immutable until their renderer components, expansion state, or
-    // available width changes, so reuse their final ANSI lines.
+    // A final result makes known stable rows cacheable even when they came from
+    // session restoration with argsComplete=false. Keep arbitrary custom tools
+    // uncached because their settled components may still animate.
     const cacheable = Boolean(
       self.result &&
       !self.isPartial &&
-      self.argsComplete &&
-      !self.result?.content.some((block) => block.type === "image") &&
+      !self.result.content.some((block) => block.type === "image") &&
       (COMPACT_TOOLS.has(self.toolName) ||
         DETAILED_TOOLS.has(self.toolName) ||
         isContext7Tool(self.toolName)),
     );
-    const cached = cacheable ? settledRenderCache.get(this) : undefined;
-    if (
-      cached &&
-      cached.width === width &&
-      cached.expanded === self.expanded &&
-      cached.callComponent === self.callRendererComponent &&
-      cached.resultComponent === self.resultRendererComponent &&
-      cached.theme === activeTheme
-    ) {
-      renderedKinds.set(this, cached.kind);
-      return cached.lines;
-    }
 
     const innerWidth = Math.max(1, width - 1);
     const pending = !self.result || self.isPartial;
@@ -509,6 +574,11 @@ export function installToolIndicators(pi: ExtensionAPI) {
     let rawHeader = headerIndex >= 0
       ? callLines[headerIndex]!
       : activeTheme.fg("toolTitle", activeTheme.bold(self.toolName));
+    // Compact tools hide their wrapped call body. Read the original Text content
+    // so long path parameters can be abbreviated in the header instead.
+    if (COMPACT_TOOLS.has(self.toolName)) {
+      rawHeader = unwrappedText(self.callRendererComponent) ?? rawHeader;
+    }
     if (self.toolName === "bash") {
       rawHeader = activeTheme.fg("toolTitle", activeTheme.bold("bash"));
     }
@@ -517,7 +587,7 @@ export function installToolIndicators(pi: ExtensionAPI) {
     if (COMPACT_TOOLS.has(self.toolName)) summary = compactSummary(self);
     else if (self.toolName === "bash") summary = bashSummary(self);
     else if (self.toolName === "write") summary = writeSummary(self.args);
-    else if (self.toolName === "edit") summary = editSummary(self);
+    else if (self.toolName === "edit") summary = editSummary(self, activeTheme);
 
     const header = composeHeader(rawHeader, summary, indicator, activeTheme, innerWidth);
     let body: string[] = [];
@@ -569,9 +639,11 @@ export function installToolIndicators(pi: ExtensionAPI) {
           : truncateToWidth(` ${rail}${line === "" ? "" : ` ${line}`}`, width, ""),
       ),
     ];
-    if (cacheable) {
+    if (cacheable && self.result) {
       settledRenderCache.set(this, {
         width,
+        args: self.args,
+        result: self.result,
         expanded: self.expanded,
         callComponent: self.callRendererComponent,
         resultComponent: self.resultRendererComponent,
@@ -590,61 +662,74 @@ export function installToolIndicators(pi: ExtensionAPI) {
 
   function renderTranscriptContainer(this: Container, width: number) {
     const children = this.children;
-    if (!children.some((child) =>
-      child instanceof ToolExecutionComponent ||
-      child.constructor.name === "UserMessageComponent"
-    )) {
+    const isSkillInvocation = (child: Component) =>
+      child.constructor.name === "SkillInvocationMessageComponent";
+    const isTranscriptTool = (child: Component) =>
+      child instanceof ToolExecutionComponent || isSkillInvocation(child);
+    if (
+      !transcriptContainers.has(this) &&
+      !children.some((child) =>
+        isTranscriptTool(child) || child.constructor.name === "UserMessageComponent"
+      )
+    ) {
       return originalContainerRender.call(this, width);
     }
+    transcriptContainers.add(this);
 
-    const rendered = children.map((child) => {
-      if (child instanceof ToolExecutionComponent) return { child, lines: child.render(width) };
-      if (child.constructor.name !== "UserMessageComponent") {
-        return { child, lines: ordinaryTrim(child.render(width)) };
-      }
-      const outputPad = Number((child as Container & { outputPad?: number }).outputPad) || 0;
-      const cached = userRenderCache.get(child as Container);
-      if (
-        cached &&
-        cached.width === width &&
-        cached.outputPad === outputPad &&
-        cached.theme === activeTheme
-      ) {
-        return { child, lines: cached.lines };
-      }
-      const lines = renderUserMessage(child as Container, width, activeTheme!);
-      userRenderCache.set(child as Container, {
-        width,
-        outputPad,
-        theme: activeTheme!,
-        lines,
-      });
-      return { child, lines };
-    });
     const output: string[] = [];
     let previousType: "tool" | "other" | undefined;
     let previousKind: TranscriptToolKind | undefined;
 
-    for (const item of rendered) {
-      if (item.lines.length === 0) continue;
-      const type = item.child instanceof ToolExecutionComponent ? "tool" : "other";
-      const kind = type === "tool" ? renderedKinds.get(item.child as ToolExecutionComponent) ?? "detailed" : undefined;
-      const firstLine = item.lines[0] ?? "";
-      const componentName = item.child.constructor.name;
+    for (const child of children) {
+      const componentName = child.constructor.name;
+      let lines: string[];
+      if (isTranscriptTool(child)) {
+        lines = child.render(width);
+      } else if (componentName !== "UserMessageComponent") {
+        lines = ordinaryTrim(child.render(width));
+      } else {
+        const userComponent = child as Container & { outputPad?: number };
+        const outputPad = Number(userComponent.outputPad) || 0;
+        const cached = userRenderCache.get(userComponent);
+        if (
+          cached &&
+          cached.width === width &&
+          cached.outputPad === outputPad &&
+          cached.theme === activeTheme
+        ) {
+          lines = cached.lines;
+        } else {
+          lines = renderUserMessage(userComponent, width, activeTheme!);
+          userRenderCache.set(userComponent, {
+            width,
+            outputPad,
+            theme: activeTheme!,
+            lines,
+          });
+        }
+      }
+
+      if (lines.length === 0) continue;
+      const type = isTranscriptTool(child) ? "tool" : "other";
+      const kind = type === "tool"
+        ? isSkillInvocation(child)
+          ? (child as unknown as { expanded: boolean }).expanded ? "detailed" : "compact"
+          : renderedKinds.get(child as ToolExecutionComponent) ?? "detailed"
+        : undefined;
+      const firstLine = lines[0] ?? "";
       const isUserMessage = componentName === "UserMessageComponent";
       // Both assistant and user messages carry OSC 133 markers. Only an
       // assistant message owns a leading external Spacer; the user row gets
       // its transcript gap explicitly below.
       const ownsLeadingGap = componentName === "AssistantMessageComponent" &&
-        firstLine.includes("\x1b]133;A") &&
-        stripAnsi(firstLine).trim() === "";
+        firstLine.includes(OSC133_ZONE_START);
       const gap = isUserMessage && previousType !== undefined
         ? 1
         : ownsLeadingGap
           ? 0
           : transcriptGap(previousType, previousKind, type, kind);
       for (let index = 0; index < gap; index += 1) output.push("");
-      output.push(...item.lines);
+      output.push(...lines);
       previousType = type;
       previousKind = kind;
     }
