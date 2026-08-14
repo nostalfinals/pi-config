@@ -22,6 +22,10 @@ function renderSummary(data: ResponseStatsEntryData, theme: Theme) {
 }
 
 export function installResponseStats(pi: ExtensionAPI) {
+  // Register during factory loading so restored custom entries are available
+  // before Pi reconstructs the transcript on reload/session replacement.
+  // Entry renderers are inert outside interactive mode; collection and entry
+  // creation below are explicitly TUI-only.
   pi.registerEntryRenderer<ResponseStatsEntryData>(
     RESPONSE_STATS_ENTRY_TYPE,
     (entry, _options, theme) => {
@@ -38,6 +42,7 @@ export function installResponseStats(pi: ExtensionAPI) {
       return new Text(renderSummary(data, theme), 1, 0);
     },
   );
+
   let agentStartedAt: number | null = null;
   let messageStart: number | null = null;
   let streamStart: number | null = null;
@@ -57,14 +62,14 @@ export function installResponseStats(pi: ExtensionAPI) {
     resetMessage();
   });
 
-  pi.on("message_start", (event) => {
-    if (event.message.role !== "assistant") return;
+  pi.on("message_start", (event, ctx) => {
+    if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
     messageStart = Date.now();
     streamStart = null;
   });
 
-  pi.on("message_update", (event) => {
-    if (event.message.role !== "assistant") return;
+  pi.on("message_update", (event, ctx) => {
+    if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
 
     const type = event.assistantMessageEvent.type;
     if (
@@ -76,8 +81,8 @@ export function installResponseStats(pi: ExtensionAPI) {
     }
   });
 
-  pi.on("message_end", (event) => {
-    if (event.message.role !== "assistant") return;
+  pi.on("message_end", (event, ctx) => {
+    if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
 
     const outputTokens = event.message.usage.output;
     const startedAt = streamStart ?? messageStart;

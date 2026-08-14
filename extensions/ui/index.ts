@@ -69,8 +69,12 @@ export default function uiShell(pi: ExtensionAPI) {
 
   pi.on("session_start", (_event, ctx) => {
     generation += 1;
-    currentContext = ctx;
+    currentContext = undefined;
+    requestRender = undefined;
     gitInfo = emptyGitInfo();
+    if (ctx.mode !== "tui") return;
+
+    currentContext = ctx;
     installFooter(
       pi,
       ctx,
@@ -81,26 +85,24 @@ export default function uiShell(pi: ExtensionAPI) {
       },
     );
 
-    if (ctx.mode === "tui") {
-      const previousEditorFactory = ctx.ui.getEditorComponent();
-      ctx.ui.setEditorComponent((tui, theme, keybindings) => {
-        const baseEditor = previousEditorFactory
-          ? previousEditorFactory(tui, theme, keybindings)
-          : new CustomEditor(tui, theme, keybindings);
-        const styledEditor = applyPromptEditorStyle(baseEditor, keybindings, () => {
-          toolsExpanded = !toolsExpanded;
-          scheduleRender();
-        });
-        interruptController = applyConfirmInterrupt(
-          styledEditor,
-          keybindings,
-          ctx,
-          () => compactionActive,
-          () => tui.requestRender(),
-        );
-        return applyEditorInputInterceptors(interruptController.editor);
+    const previousEditorFactory = ctx.ui.getEditorComponent();
+    ctx.ui.setEditorComponent((tui, theme, keybindings) => {
+      const baseEditor = previousEditorFactory
+        ? previousEditorFactory(tui, theme, keybindings)
+        : new CustomEditor(tui, theme, keybindings);
+      const styledEditor = applyPromptEditorStyle(baseEditor, keybindings, () => {
+        toolsExpanded = !toolsExpanded;
+        scheduleRender();
       });
-    }
+      interruptController = applyConfirmInterrupt(
+        styledEditor,
+        keybindings,
+        ctx,
+        () => compactionActive,
+        () => tui.requestRender(),
+      );
+      return applyEditorInputInterceptors(interruptController.editor);
+    });
 
     void refreshGitState(ctx, true);
     if (pollTimer) clearInterval(pollTimer);
@@ -109,21 +111,33 @@ export default function uiShell(pi: ExtensionAPI) {
     }, POLL_INTERVAL_MS);
   });
 
-  pi.on("model_select", () => scheduleRender());
-  pi.on("thinking_level_select", () => scheduleRender());
-  pi.on("turn_end", () => scheduleRender());
+  pi.on("model_select", (_event, ctx) => {
+    if (ctx.mode === "tui") scheduleRender();
+  });
+  pi.on("thinking_level_select", (_event, ctx) => {
+    if (ctx.mode === "tui") scheduleRender();
+  });
+  pi.on("turn_end", (_event, ctx) => {
+    if (ctx.mode === "tui") scheduleRender();
+  });
   pi.on("input", (_event, ctx) => {
+    if (ctx.mode !== "tui") return { action: "continue" };
     void refreshGitState(ctx);
     return { action: "continue" };
   });
-  pi.on("tool_execution_end", (_event, ctx) => void refreshGitState(ctx));
-  pi.on("session_before_compact", (event) => {
+  pi.on("tool_execution_end", (_event, ctx) => {
+    if (ctx.mode === "tui") void refreshGitState(ctx);
+  });
+  pi.on("session_before_compact", (event, ctx) => {
+    if (ctx.mode !== "tui") return;
     compactionActive = true;
     event.signal.addEventListener("abort", finishCompaction, { once: true });
   });
-  pi.on("session_compact", finishCompaction);
-  pi.on("agent_settled", () => {
-    if (!compactionActive) interruptController?.clear();
+  pi.on("session_compact", (_event, ctx) => {
+    if (ctx.mode === "tui") finishCompaction();
+  });
+  pi.on("agent_settled", (_event, ctx) => {
+    if (ctx.mode === "tui" && !compactionActive) interruptController?.clear();
   });
 
   pi.on("session_shutdown", (_event, ctx) => {
