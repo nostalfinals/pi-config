@@ -13,7 +13,6 @@ import { emptyGitInfo } from "./footer/types";
 import { installCompactionStatus } from "./status/compaction";
 import { installWorkingStatus } from "./status/working";
 import { installCompactionSummary } from "./transcript/compaction-summary";
-import { installContext7OutputCollapse } from "./transcript/context7-output";
 import { installResponseStats } from "./transcript/response-stats";
 import { installSkillInvocationStyle } from "./transcript/skill-invocation";
 import { installToolIndicators } from "./transcript/tool-indicator";
@@ -42,7 +41,6 @@ export default function uiShell(pi: ExtensionAPI) {
 
   installCompactionStatus(pi);
   installCompactionSummary(pi);
-  installContext7OutputCollapse(pi);
   installResponseStats(pi);
   installSkillInvocationStyle(pi);
   installToolIndicators(pi);

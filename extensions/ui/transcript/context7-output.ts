@@ -105,7 +105,11 @@ class Context7ResultComponent implements Component {
   }
 
   render(width: number): string[] {
-    const output = new Text(this.theme.fg("toolOutput", this.text), 0, 0).render(width);
+    const output = new Text(
+      this.theme.fg(this.isError ? "error" : "toolOutput", this.text),
+      0,
+      0,
+    ).render(width);
     if (
       this.expanded ||
       this.isPartial ||
@@ -129,6 +133,14 @@ class Context7ResultComponent implements Component {
 
   invalidate(): void {}
 }
+
+export const renderContext7Result: ResultRenderer = (result, options, theme, context) => {
+  const component = context.lastComponent instanceof Context7ResultComponent
+    ? context.lastComponent
+    : new Context7ResultComponent(theme);
+  component.setResult(getTextOutput(result), options, theme, context.isError);
+  return component;
+};
 
 export function installContext7OutputCollapse(pi: ExtensionAPI) {
   const prototype = ToolExecutionComponent.prototype as unknown as PatchedPrototype;
