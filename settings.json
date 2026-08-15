@@ -8,12 +8,6 @@
   "hideThinkingBlock": true,
   "packages": [
     "git:github.com/nostalfinals/pi-sandbox",
-    {
-      "source": "git:github.com/nostalfinals/pi-dcp",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "git:github.com/nostalfinals/cooperate@c6abc4d91587ac23ff58fd327fae37f216ba5504",
     "npm:pi-compact-thinking"
   ],
