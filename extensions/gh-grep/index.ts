@@ -12,6 +12,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
 import { searchGrepApp } from "./lib";
 import { renderGrepCall, renderGrepResult } from "./render";
+import type { ToolDisplayDescriptor, ToolInternals } from "../ui/transcript/tool-display";
+import type { GrepAppHit } from "./lib";
 
 const ghGrepToolSchema = Type.Object({
   query: Type.String({
@@ -75,6 +77,11 @@ export default function ghGrepExtension(pi: ExtensionAPI) {
       "Narrow gh_grep results with language, repo (e.g. `facebook/react`), or path filters when the user has a specific stack in mind.",
     ],
     parameters: ghGrepToolSchema,
+    display: {
+      cacheable: true,
+      suppressResultWhenCollapsed: true,
+      summary: ghGrepSummary,
+    },
     renderCall: (args, theme) => renderGrepCall(args, theme),
     renderResult: (result, options, theme, context) =>
       renderGrepResult(result, options, theme, context),
@@ -98,4 +105,27 @@ export default function ghGrepExtension(pi: ExtensionAPI) {
       };
     },
   });
+}
+
+/**
+ * Header summary for gh_grep, in the style of the built-in grep tool:
+ * result count, "N+" when truncated, plus the number of distinct repos.
+ * The tool is compact by default; expanded mode still uses its full
+ * renderResult implementation from render.ts.
+ */
+function ghGrepSummary(self: ToolInternals): string | undefined {
+  const result = self.result;
+  if (!result || self.isPartial || result.isError) return undefined;
+  const details = result.details as
+    | { total?: number; hits?: GrepAppHit[] }
+    | undefined;
+  const hits = details?.hits;
+  if (!hits || hits.length === 0) return "no results";
+
+  const repos = new Set(hits.map((hit) => hit.repo).filter(Boolean)).size;
+  const total = typeof details?.total === "number" ? details.total : hits.length;
+  const count = hits.length < total
+    ? `${total}+ results`
+    : `${total} ${total === 1 ? "result" : "results"}`;
+  return repos > 1 ? `${count} · ${repos} repos` : count;
 }

@@ -1,4 +1,46 @@
+import { sliceByColumn, visibleWidth } from "@earendil-works/pi-tui";
+import type { Theme } from "@earendil-works/pi-coding-agent";
+
 export type TranscriptToolKind = "compact" | "detailed";
+
+const ANSI_SEQUENCE = /\x1b(?:\[[0-?]*[ -/]*[@-~]|\][\s\S]*?(?:\x07|\x1b\\))/gu;
+
+export function stripAnsi(text: string) {
+  return text.replace(ANSI_SEQUENCE, "");
+}
+
+export function ordinaryTrim(lines: string[]) {
+  let start = 0;
+  let end = lines.length;
+  while (start < end && lines[start] === "") start += 1;
+  while (end > start && lines[end - 1] === "") end -= 1;
+  return lines.slice(start, end);
+}
+
+export function trimRenderedLine(line: string) {
+  const plain = stripAnsi(line);
+  const trimmed = plain.replace(/\s+$/u, "");
+  return trimmed.length === plain.length
+    ? line
+    : sliceByColumn(line, 0, visibleWidth(trimmed), true);
+}
+
+export function removeCardBackgrounds(lines: string[], theme: Theme) {
+  const roles: Array<Parameters<Theme["getBgAnsi"]>[0]> = [
+    "toolPendingBg",
+    "toolSuccessBg",
+    "toolErrorBg",
+  ];
+  const backgrounds = roles.map((role) => theme.getBgAnsi(role));
+  return lines.map((line) => backgrounds.reduce(
+    (value, background) => value.split(background).join("\x1b[49m"),
+    line,
+  ));
+}
+
+export function cleanToolLines(lines: string[], theme: Theme) {
+  return removeCardBackgrounds(lines, theme).map(trimRenderedLine);
+}
 
 export function transcriptGap(
   previous: "tool" | "other" | undefined,
