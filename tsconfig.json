@@ -1,0 +1,18 @@
+{
+  // Editor-only config: enables indexing / IntelliSense for ./extensions and ./skills
+  // against pi's globally installed npm packages, which are linked into ./node_modules
+  // by scripts/link-ide-deps.sh. No emit happens from here.
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["es2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["extensions/**/*.ts", "skills/**/*.ts"]
+}
