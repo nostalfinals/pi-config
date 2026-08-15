@@ -235,10 +235,66 @@ function addError(errors: string[], message: string): void {
   if (!errors.includes(message)) errors.push(message);
 }
 
-function withAliases(provider: Provider, aliases: Model<any>[]): Provider {
+function aliasForModel(
+  provider: Provider,
+  model: Model<any>,
+  aliasesById: ReadonlyMap<string, FastAlias>,
+): FastAlias | undefined {
+  return aliasesById.get(modelKey(provider.id, model.id));
+}
+
+// Compaction can call the provider directly, without going through Pi's
+// before_provider_request hook. Rewrite at the provider boundary as well.
+// Keep the alias model itself intact so responses and session metadata still
+// refer to the selected alias.
+function fastRequestOptions(options: unknown, alias: FastAlias): unknown {
+  const baseOptions = isRecord(options) ? options : {};
+  const onPayload = baseOptions.onPayload;
+  return {
+    ...baseOptions,
+    onPayload: async (payload: unknown, model: Model<any>) => {
+      const transformedPayload = typeof onPayload === "function" ? await onPayload(payload, model) : undefined;
+      const nextPayload = transformedPayload === undefined ? payload : transformedPayload;
+      if (!isRecord(nextPayload)) return nextPayload;
+
+      return {
+        ...nextPayload,
+        model: alias.sourceModel,
+        service_tier: alias.serviceTier,
+      };
+    },
+  };
+}
+
+function withAliases(
+  provider: Provider,
+  aliases: Model<any>[],
+  aliasesById: ReadonlyMap<string, FastAlias>,
+): Provider {
+  const resolve = (model: Model<any>) => {
+    const alias = aliasForModel(provider, model, aliasesById);
+    return alias ? { model, alias } : { model };
+  };
+
   return {
     ...provider,
     getModels: () => [...provider.getModels(), ...aliases],
+    stream: (model, context, options) => {
+      const resolved = resolve(model);
+      return provider.stream(
+        resolved.model,
+        context,
+        resolved.alias ? (fastRequestOptions(options, resolved.alias) as typeof options) : options,
+      );
+    },
+    streamSimple: (model, context, options) => {
+      const resolved = resolve(model);
+      return provider.streamSimple(
+        resolved.model,
+        context,
+        resolved.alias ? (fastRequestOptions(options, resolved.alias) as typeof options) : options,
+      );
+    },
   };
 }
 
@@ -339,7 +395,7 @@ export default function openaiFast(pi: ExtensionAPI): void {
   );
   for (const [providerId, aliases] of aliasesByProvider) {
     const provider = providers.get(providerId);
-    if (provider) pi.registerProvider(withAliases(provider, aliases));
+    if (provider) pi.registerProvider(withAliases(provider, aliases, aliasesById));
   }
 
   // The provider payload has already been built by the time this hook runs.
@@ -377,7 +433,7 @@ export default function openaiFast(pi: ExtensionAPI): void {
       // Preserve the current effective provider (including auth, custom
       // endpoint configuration, and any models.json changes) and only append
       // aliases that were discovered after the initial provider registration.
-      pi.registerProvider(withAliases(provider, aliases));
+      pi.registerProvider(withAliases(provider, aliases, aliasesById));
     }
 
     notifyErrors(ctx, errors);
