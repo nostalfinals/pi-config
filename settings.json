@@ -19,5 +19,9 @@
   ],
   "terminal": {
     "showTerminalProgress": true
-  }
+  },
+  "extensions": [
+    "-extensions/grep.ts",
+    "-extensions/find.ts"
+  ]
 }

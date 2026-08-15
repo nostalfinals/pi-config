@@ -6,4 +6,6 @@ Do not test or assert the exact or partial wording of prompts, messages, logs, o
 
 Do not spawn any subagent unless explicitly requested by the user or required by the current workflow.
 
+Use `fd` to find files and `rg` to search within files instead of `find` and `grep`.
+
 Use local documentation and source when they are sufficient. When they are insufficient, potentially outdated, or leave material uncertainty, verify with an appropriate external source before choosing an approach.
