@@ -20,6 +20,7 @@
 !/model-preset.json
 !/sandbox.json
 !/codex-search.json
+!/openai-fast.json
 !/cooperate/
 cooperate/sessions/
 cooperate/history
