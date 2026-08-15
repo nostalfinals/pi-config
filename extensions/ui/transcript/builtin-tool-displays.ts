@@ -1,3 +1,4 @@
+import { homedir } from "node:os";
 import type { Theme } from "@earendil-works/pi-coding-agent";
 import { sliceByColumn, visibleWidth, wrapTextWithAnsi, type Component } from "@earendil-works/pi-tui";
 import {
@@ -25,11 +26,18 @@ import {
  * original hardcoded branches in tool-indicator.ts.
  */
 
+function pathArgument(args: unknown) {
+  if (!args || typeof args !== "object") return undefined;
+  const toolArgs = args as { path?: unknown; file_path?: unknown };
+  const path = toolArgs.file_path ?? toolArgs.path;
+  if (typeof path !== "string") return undefined;
+  const home = homedir();
+  return path.startsWith(home) ? `~${path.slice(home.length)}` : path;
+}
+
 function isSkillReadPath(args: unknown) {
-  if (!args || typeof args !== "object") return false;
-  const readArgs = args as { path?: unknown; file_path?: unknown };
-  const path = readArgs.file_path ?? readArgs.path;
-  return typeof path === "string" && /(?:^|[\\/])SKILL\.md$/u.test(path);
+  const path = pathArgument(args);
+  return path !== undefined && /(?:^|[\\/])SKILL\.md$/u.test(path);
 }
 
 function textOutput(result: ToolResult | undefined) {
@@ -174,6 +182,7 @@ function installBuiltinToolDisplays() {
     suppressResultWhenCollapsed: true,
     suppressCallBody: true,
     unwrappedCallHeader: true,
+    pathArgument,
   };
   BUILTIN_DISPLAYS.set("read", {
     ...compact,
@@ -193,12 +202,14 @@ function installBuiltinToolDisplays() {
   BUILTIN_DISPLAYS.set("write", {
     detailed: true,
     cacheable: true,
+    pathArgument,
     summary: (self) => writeSummary(self.args),
     composeBody: writeComposeBody,
   });
   BUILTIN_DISPLAYS.set("edit", {
     detailed: true,
     cacheable: true,
+    pathArgument,
     handleSelfShell: true,
     renderCallLines: stripEditBox,
     transformResultLines: (lines) => lines.map(removeOneLeadingColumn),

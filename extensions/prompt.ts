@@ -4,7 +4,7 @@ const DEFAULT_GUIDELINE = "Inspect PI_* environment variables for current model 
 const REPLACEMENT_GUIDELINE =
 	"Inspect PI_* environment variables when you specifically need the current model, provider, reasoning level, or session details to fulfill the user's request.";
 
-export default function (pi: ExtensionAPI) {
+export default function promptPolicy(pi: ExtensionAPI) {
 	pi.on("before_agent_start", (event) => {
 		const systemPrompt = event.systemPrompt.replace(DEFAULT_GUIDELINE, REPLACEMENT_GUIDELINE);
 		return systemPrompt === event.systemPrompt ? undefined : { systemPrompt };

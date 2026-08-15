@@ -14,18 +14,8 @@
         "-index.ts"
       ]
     },
-    "git:https://github.com/nostalfinals/pi-codex-search",
     "git:github.com/nostalfinals/cooperate@c6abc4d91587ac23ff58fd327fae37f216ba5504",
-    "npm:pi-compact-thinking",
-    {
-      "source": "npm:@upstash/context7-pi",
-      "skills": [
-        "-skills/context7-docs/SKILL.md"
-      ],
-      "prompts": [
-        "-prompts/c7-docs.md"
-      ]
-    }
+    "npm:pi-compact-thinking"
   ],
   "terminal": {
     "showTerminalProgress": true

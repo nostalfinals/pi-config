@@ -123,39 +123,31 @@ function elidePathAtMiddle(path: string, maxWidth: number): PathElision | undefi
   return undefined;
 }
 
-function shortenMiddle(line: string, width: number) {
+function shortenMiddle(line: string, width: number, pathArgument: string | undefined) {
   if (width <= 0) return "";
   if (visibleWidth(line) <= width) return line;
   if (width <= 3) return truncateToWidth(line, width, "");
 
+  // Renderers declare their actual filesystem-path argument. Inferring a path
+  // from a slash in the rendered text misclassified values such as Context7
+  // library IDs (/org/project) and queries containing URLs or regexes.
   const plain = stripAnsi(line);
-  const firstSpace = plain.indexOf(" ");
-  const titleWidth = firstSpace < 0 ? 0 : firstSpace + 1;
-  const parameter = firstSpace < 0 ? "" : plain.slice(titleWidth);
-  const firstSlash = parameter.indexOf("/");
-  if (firstSlash >= 0) {
-    const pathOffset = parameter.lastIndexOf(" ", firstSlash) + 1;
-    const beforePath = parameter.slice(0, pathOffset);
-    const path = parameter.slice(pathOffset);
-    const pathStart = titleWidth + visibleWidth(beforePath);
-    const elision = elidePathAtMiddle(path, width - pathStart);
-    if (elision) {
-      const total = visibleWidth(line);
-      const prefixEnd = pathStart + elision.prefixWidth;
-      const suffixStart = pathStart + elision.suffixStart;
-      return `${sliceByColumn(line, 0, prefixEnd, true)}/.../${sliceByColumn(line, suffixStart, total - suffixStart, true)}`;
+  if (pathArgument) {
+    const pathOffset = plain.indexOf(pathArgument);
+    if (pathOffset >= 0) {
+      const pathStart = visibleWidth(plain.slice(0, pathOffset));
+      const trailingWidth = visibleWidth(plain.slice(pathOffset + pathArgument.length));
+      const elision = elidePathAtMiddle(pathArgument, width - pathStart - trailingWidth);
+      if (elision) {
+        const total = visibleWidth(line);
+        const prefixEnd = pathStart + elision.prefixWidth;
+        const suffixStart = pathStart + elision.suffixStart;
+        return `${sliceByColumn(line, 0, prefixEnd, true)}/.../${sliceByColumn(line, suffixStart, total - suffixStart, true)}`;
+      }
     }
   }
 
-  const marker = "…";
-  const prefixWidth = Math.min(
-    width - marker.length - 1,
-    Math.max(1, titleWidth || Math.ceil(width / 2)),
-  );
-  const tailWidth = width - prefixWidth - marker.length;
-  if (tailWidth <= 0) return truncateToWidth(line, width, marker);
-  const total = visibleWidth(line);
-  return `${sliceByColumn(line, 0, prefixWidth, true)}${marker}${sliceByColumn(line, total - tailWidth, tailWidth, true)}`;
+  return truncateToWidth(line, width, "...");
 }
 
 function unwrappedText(component: Component | undefined) {
@@ -169,6 +161,7 @@ function composeHeader(
   indicator: string,
   theme: Theme,
   width: number,
+  pathArgument: string | undefined,
 ) {
   const prefix = `${indicator} `;
   // ANSI-aware column slicing can end before an OSC 8 hyperlink terminator.
@@ -180,7 +173,7 @@ function composeHeader(
   const summarySuffix = summary ? ` ${styledSummary}` : "";
   const middleBudget = width - visibleWidth(prefix) - visibleWidth(summarySuffix);
   if (middleBudget > 0) {
-    const line = `${prefix}${shortenMiddle(removeVisibleExpandHint(safeHeader), middleBudget)}${summarySuffix}`;
+    const line = `${prefix}${shortenMiddle(removeVisibleExpandHint(safeHeader), middleBudget, pathArgument)}${summarySuffix}`;
     if (visibleWidth(line) <= width) return line;
   }
   return truncateToWidth(`${prefix}${safeHeader}${summarySuffix}`, width, "");
@@ -424,7 +417,14 @@ export function installToolIndicators(pi: ExtensionAPI) {
 
     const summary = display.summary?.(self, activeTheme);
 
-    const header = composeHeader(rawHeader, summary, indicator, activeTheme, innerWidth);
+    const header = composeHeader(
+      rawHeader,
+      summary,
+      indicator,
+      activeTheme,
+      innerWidth,
+      display.pathArgument?.(self.args),
+    );
     let body: string[] = [];
 
     const resultLines = ordinaryTrim(cleanToolLines(

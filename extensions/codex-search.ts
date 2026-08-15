@@ -1,4 +1,4 @@
-import { StringEnum, Type } from "@earendil-works/pi-ai";
+import { Type } from "@earendil-works/pi-ai";
 import type { Static } from "@earendil-works/pi-ai";
 import * as piCodingAgent from "@earendil-works/pi-coding-agent";
 import type {
@@ -23,25 +23,11 @@ const Params = Type.Object({
     minItems: 1,
     maxItems: MAX_QUERIES,
     description:
-      "One or more web search queries to run in parallel. The number of items controls how many searches are performed.",
+      "Search queries. Use distinct queries when multiple search angles are useful.",
   }),
-  search_context_size: Type.Optional(
-    StringEnum(["low", "medium", "high"] as const, {
-      description:
-        "Amount of web context to retrieve. Use low for simple lookups, medium by default, high for complex research.",
-    }),
-  ),
-  freshness: Type.Optional(
-    StringEnum(["cached", "indexed", "live"] as const, {
-      description:
-        "Search freshness. Use live for time-sensitive information, indexed for OpenAI-indexed search, cached for stable information.",
-    }),
-  ),
 });
 
 type Params = Static<typeof Params>;
-type Freshness = "cached" | "indexed" | "live";
-type SearchContextSize = "low" | "medium" | "high";
 
 interface Citation {
   title?: string;
@@ -56,8 +42,6 @@ interface SearchResult {
 
 interface SearchDetails {
   model: string;
-  freshness: Freshness;
-  searchContextSize: SearchContextSize;
   /** Total time from starting the request until all query results settle. */
   elapsedMs?: number;
   queries: string[];
@@ -124,28 +108,18 @@ const codexSearchTool: ToolDefinition<typeof Params, SearchDetails> & {
 } = {
   name: "codex_search",
   label: "Web Search",
-  description: "Search the web using the configured ChatGPT Codex subscription.",
-  promptSnippet: "Search the web using the configured ChatGPT Codex subscription",
-  promptGuidelines: [
-    "Use codex_search when current or source-backed information is needed.",
-    "Batch up to 5 related queries in one call when grouped comparison matters.",
-    "Choose live freshness for time-sensitive information, cached for stable information, and indexed when OpenAI-indexed web access is sufficient.",
-    "Choose high search_context_size for complex research and medium for normal searches.",
-  ],
+  description: "Search the web.",
   parameters: Params,
   display: {
     cacheable: true,
     suppressResultWhenCollapsed: true,
     // Multi-query calls render their query list as a tree in the call body.
-    // The elapsed/details line is composed below the tree as well.
+    // The details line is composed below the tree as well.
     unwrappedCallHeader: true,
     composeBody: renderCodexBody,
   },
-  renderCall: (args, theme, context) => {
-    if (context.state.startedAt === undefined) context.state.startedAt = Date.now();
+  renderCall: (args, theme) => {
     const queries = args.queries.map((query) => formatInline(query, 110));
-    const freshness = args.freshness ?? "live";
-    const searchContextSize = args.search_context_size ?? "medium";
     const title = theme.fg("toolTitle", theme.bold("codex_search"));
     const callLabel =
       queries.length === 1
@@ -155,10 +129,8 @@ const codexSearchTool: ToolDefinition<typeof Params, SearchDetails> & {
         : queries.length > 1
           ? ` ${theme.fg("accent", `${queries.length} queries`)}`
           : "";
-    const parameters = ` · ${theme.fg("accent", `${searchContextSize}/${freshness}`)}`;
-    const text = `${title}${callLabel}${parameters}${
-      queries.length > 1 ? `\n${renderQueryTree(queries, theme)}` : ""
-    }`;
+    const text = `${title}${callLabel}${queries.length > 1 ? `\n${renderQueryTree(queries, theme)}` : ""
+      }`;
     return new Text(text, 0, 0);
   },
   renderResult: (result, _options, theme, context) => {
@@ -174,8 +146,6 @@ const codexSearchTool: ToolDefinition<typeof Params, SearchDetails> & {
   async execute(_toolCallId, params, signal, _onUpdate, ctx) {
     const startedAt = Date.now();
     const queries = params.queries.map((query) => query.trim()).filter(Boolean);
-    const freshness = params.freshness ?? "live";
-    const searchContextSize = params.search_context_size ?? "medium";
     const model = await loadModel();
     const token = await ctx.modelRegistry.getApiKeyForProvider(PROVIDER);
 
@@ -199,8 +169,6 @@ const codexSearchTool: ToolDefinition<typeof Params, SearchDetails> & {
           model,
           token,
           accountId,
-          freshness,
-          searchContextSize,
           sessionId: ctx.sessionManager.getSessionId(),
           signal,
         }),
@@ -237,8 +205,6 @@ const codexSearchTool: ToolDefinition<typeof Params, SearchDetails> & {
       content: [{ type: "text", text: blocks.join("\n\n") }],
       details: {
         model,
-        freshness,
-        searchContextSize,
         elapsedMs: Date.now() - startedAt,
         queries,
         successes: successes.length,
@@ -255,18 +221,13 @@ export default async function codexSearchExtension(pi: ExtensionAPI) {
 }
 
 /**
- * Keep the header limited to the call parameters. The live timer and settled
- * details use the same body rail as the query tree.
+ * Keep the header limited to the call parameters. The settled details use the
+ * same body rail as the query tree.
  */
 function renderCodexBody({ self, callLines, resultLines, theme }: BodyComposeContext): string[] {
   const body = callLines.slice(1);
 
-  if (!self.result || self.isPartial) {
-    const startedAt = self.rendererState?.startedAt as number | undefined;
-    if (startedAt !== undefined) {
-      body.push(theme.fg("muted", `elapsed ${((Date.now() - startedAt) / 1000).toFixed(1)}s`));
-    }
-  } else if (!self.result.isError) {
+  if (self.result && !self.result.isError) {
     const details = self.result.details as SearchDetails | undefined;
     if (details) body.push(formatSearchSummary(details, theme));
   }
@@ -326,8 +287,6 @@ async function runSearch(options: {
   model: string;
   token: string;
   accountId: string;
-  freshness: Freshness;
-  searchContextSize: SearchContextSize;
   sessionId: string;
   signal: AbortSignal | undefined;
 }): Promise<{ text: string; citations: Citation[] }> {
@@ -336,8 +295,6 @@ async function runSearch(options: {
     model,
     token,
     accountId,
-    freshness,
-    searchContextSize,
     sessionId,
     signal,
   } = options;
@@ -355,18 +312,15 @@ async function runSearch(options: {
 
   const webSearchTool: Record<string, unknown> = {
     type: "web_search",
-    external_web_access: freshness !== "cached",
-    search_context_size: searchContextSize,
+    external_web_access: true,
+    search_context_size: "high",
   };
-  if (freshness === "indexed") webSearchTool.indexed_web_access = true;
 
   const response = await fetchCodex(ENDPOINT, {
     method: "POST",
     headers,
     body: JSON.stringify({
       model,
-      instructions:
-        "You are a concise web search assistant. Use web search, answer the query, and preserve source citations from annotations.",
       input: [
         {
           type: "message",
@@ -529,8 +483,8 @@ function formatSuccess(result: SearchResult, multiple: boolean): string {
     result.text,
     result.citations.length > 0
       ? `Sources:\n${result.citations
-          .map((citation, index) => `${index + 1}. ${citation.title || citation.url}: ${citation.url}`)
-          .join("\n")}`
+        .map((citation, index) => `${index + 1}. ${citation.title || citation.url}: ${citation.url}`)
+        .join("\n")}`
       : "",
   ]
     .filter(Boolean)

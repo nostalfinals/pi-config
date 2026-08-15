@@ -2,7 +2,7 @@ import { Type } from "typebox";
 import type { Static } from "typebox";
 import type { ExtensionAPI, Theme, ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { Text, type Component } from "@earendil-works/pi-tui";
-import type { ToolDisplayDescriptor, ToolInternals } from "./ui/transcript/tool-display";
+import type { BodyComposeContext, ToolDisplayDescriptor } from "./ui/transcript/tool-display";
 
 const BASE_URL = "https://context7.com/api";
 
@@ -10,12 +10,12 @@ const ResolveLibraryIdParams = Type.Object({
   query: Type.String({
     minLength: 1,
     description:
-      "What to look up in the library documentation. Keep this focused on one concept.",
+      "The task or documentation need, used to rank matching library candidates by relevance.",
   }),
   libraryName: Type.String({
     minLength: 1,
     description:
-      "Official package or product name, such as Next.js, React, or Prisma.",
+      "Library, package, or product name to resolve, such as Next.js, React, or Prisma.",
   }),
 });
 
@@ -24,11 +24,15 @@ type ResolveLibraryIdParams = Static<typeof ResolveLibraryIdParams>;
 const QueryDocsParams = Type.Object({
   libraryId: Type.String({
     minLength: 1,
-    description: "Exact Context7-compatible library ID, such as /vercel/next.js.",
+    description:
+      "Exact Context7 library ID, such as /vercel/next.js. " +
+      "If not already known, obtain it with resolve_library_id first.",
   }),
   query: Type.String({
     minLength: 1,
-    description: "A focused documentation question about one specific concept.",
+    description:
+      "Documentation question or topic to retrieve from the selected library. " +
+      "Include the specific API, behavior, or integration detail needed by the task.",
   }),
 });
 
@@ -68,16 +72,13 @@ const resolveLibraryIdTool: ToolDefinition<typeof ResolveLibraryIdParams, Resolv
 } = {
   name: "resolve_library_id",
   label: "Resolve Context7 Library ID",
-  description: `Resolves a package or product name to a Context7-compatible library ID and returns matching libraries.
-
-Call resolve_library_id before query_docs unless the user already provides a library ID in /org/project or /org/project/version format. Prefer official, high-quality, and well-maintained results.`,
+  description: `Resolve a library or product name to a Context7 library ID.`,
   parameters: ResolveLibraryIdParams,
   display: {
     cacheable: true,
     suppressResultWhenCollapsed: true,
-    suppressCallBody: true,
     unwrappedCallHeader: true,
-    summary: resolveSummary,
+    composeBody: renderResolveBody,
   },
   renderCall: (args, theme) => renderResolveCall(args, theme),
   async execute(_toolCallId, params, signal) {
@@ -121,14 +122,11 @@ const queryDocsTool: ToolDefinition<typeof QueryDocsParams, undefined> & {
 } = {
   name: "query_docs",
   label: "Query Documentation",
-  description: `Retrieves up-to-date documentation and code examples from Context7.
-
-Call resolve_library_id first to obtain the exact library ID unless the user already provides one. Keep each query focused on a single concept and do not include secrets, credentials, personal data, or proprietary code.`,
+  description: `"Retrieve documentation and code examples from Context7.`,
   parameters: QueryDocsParams,
   display: {
     cacheable: true,
     suppressResultWhenCollapsed: true,
-    suppressCallBody: true,
     unwrappedCallHeader: true,
   },
   renderCall: (args, theme) => renderQueryDocsCall(args, theme),
@@ -146,7 +144,7 @@ Call resolve_library_id first to obtain the exact library ID unless the user alr
     const text = await response.text();
     return textResult(
       text ||
-        "Documentation not found. Check the Context7-compatible library ID and try again.",
+      "Documentation not found. Check the Context7-compatible library ID and try again.",
     );
   },
 };
@@ -157,35 +155,81 @@ export default function context7Extension(pi: ExtensionAPI) {
 }
 
 function renderResolveCall(args: ResolveLibraryIdParams, theme: Theme): Component {
-  const text =
-    theme.fg("toolTitle", theme.bold("resolve_library_id")) +
-    ` ${theme.fg("accent", args.libraryName)}` +
-    (args.query ? ` ${theme.fg("accent", `"${args.query}"`)}` : "");
+  const title = theme.fg("toolTitle", theme.bold("resolve_library_id"));
+  const tree = renderResolveTree(args, theme);
+  const text = `${title}${tree ? `\n${tree}` : ""}`;
   return new Text(text, 0, 0);
 }
 
+function renderResolveTree(args: ResolveLibraryIdParams, theme: Theme): string {
+  const parts: string[] = [];
+  const libraryName = formatInline(args.libraryName, 110);
+  if (libraryName) parts.push(`library: ${libraryName}`);
+  const query = formatInline(args.query, 110);
+  if (query) parts.push(`query: ${query}`);
+  return renderTree(theme, parts);
+}
+
 function renderQueryDocsCall(args: QueryDocsParams, theme: Theme): Component {
-  const text =
-    theme.fg("toolTitle", theme.bold("query_docs")) +
-    ` ${theme.fg("accent", args.libraryId)}` +
-    (args.query ? ` ${theme.fg("accent", `"${args.query}"`)}` : "");
+  const title = theme.fg("toolTitle", theme.bold("query_docs"));
+  const tree = renderQueryDocsTree(args, theme);
+  const text = `${title}${tree ? `\n${tree}` : ""}`;
   return new Text(text, 0, 0);
+}
+
+function renderQueryDocsTree(args: QueryDocsParams, theme: Theme): string {
+  const parts: string[] = [];
+  const libraryId = formatInline(args.libraryId, 110);
+  if (libraryId) parts.push(`library: ${libraryId}`);
+  const query = formatInline(args.query, 110);
+  if (query) parts.push(`query: ${query}`);
+  return renderTree(theme, parts);
+}
+
+function renderTree(theme: Theme, parts: string[]): string {
+  return parts
+    .map((part, index) => {
+      const branch = index === parts.length - 1 ? "└" : "├";
+      return theme.fg("accent", `${branch} ${part}`);
+    })
+    .join("\n");
+}
+
+function renderResolveBody({ self, callLines, resultLines, theme }: BodyComposeContext): string[] {
+  const body = callLines.slice(1);
+  if (self.result && !self.result.isError) {
+    const summary = formatResolveSummary(
+      self.result.details as ResolveLibraryDetails | undefined,
+      theme,
+    );
+    if (summary) body.push(summary);
+  }
+  body.push(...resultLines);
+  return body;
+}
+
+function formatResolveSummary(
+  details: ResolveLibraryDetails | undefined,
+  theme: Theme,
+): string | undefined {
+  const results = details?.results;
+  if (!results || results.length === 0) return undefined;
+  const text = results.length === 1
+    ? `1 library · ${results[0].id}`
+    : `${results.length} libraries`;
+  return theme.fg("muted", text);
+}
+
+function formatInline(value: unknown, maxLength = 110): string {
+  const text = typeof value === "string" ? value.trim().replace(/\s+/gu, " ") : "";
+  if (!text) return "";
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
 /**
  * Header summary for resolve_library_id: library count; the single hit
  * also shows its ID. Pending calls get no summary.
  */
-function resolveSummary(self: ToolInternals): string | undefined {
-  const result = self.result;
-  if (!result || self.isPartial || result.isError) return undefined;
-  const details = result.details as ResolveLibraryDetails | undefined;
-  const results = details?.results;
-  if (!results || results.length === 0) return undefined;
-  if (results.length === 1) return `1 library · ${results[0].id}`;
-  return `${results.length} libraries`;
-}
-
 function authHeaders(): Record<string, string> {
   const apiKey = process.env.CONTEXT7_API_KEY;
   return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};

@@ -74,6 +74,12 @@ export type BodyComposeContext = {
 export interface ToolDisplayDescriptor {
   /** Extra text rendered after the tool title on the header line. */
   summary?(self: ToolInternals, theme: Theme): string | undefined;
+  /**
+   * Return the filesystem-path argument rendered in the header, if any. Only
+   * this declared value receives middle path elision; all other headers are
+   * truncated at the end.
+   */
+  pathArgument?(args: unknown): string | undefined;
   /** Force the "detailed" row kind (affects inter-row gap rules). Default: derived from body length. */
   detailed?: boolean;
   /** Allow settled rows to be cached across redraws. Default: false. */
