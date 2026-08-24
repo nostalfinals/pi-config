@@ -8,7 +8,7 @@
   "hideThinkingBlock": true,
   "packages": [
     "git:github.com/nostalfinals/pi-sandbox",
-    "git:github.com/nostalfinals/cooperate@c6abc4d91587ac23ff58fd327fae37f216ba5504",
+    "git:github.com/nostalfinals/cooperate@5d91efd30d220ffeeb6778e05215359a8758084f",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
