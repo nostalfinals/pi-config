@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.84.3",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
@@ -7,7 +7,12 @@
   "defaultThinkingLevel": "xhigh",
   "hideThinkingBlock": true,
   "packages": [
-    "git:github.com/nostalfinals/pi-sandbox",
+    {
+      "source": "git:github.com/nostalfinals/pi-sandbox",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "git:github.com/nostalfinals/cooperate@5d91efd30d220ffeeb6778e05215359a8758084f",
     "npm:pi-compact-thinking"
   ],

@@ -5,19 +5,24 @@ description: Request an independent, convergent code review from the reviewer su
 
 # Ask for review
 
-Manage one convergent review session with at most three reviewer rounds:
+Manage one reviewer session whose first round discovers a bounded finding set and whose later rounds verify those findings and their repair deltas instead of restarting broad discovery.
 
-- Round 1 discovers a bounded set of concrete correctness findings.
-- Rounds 2 and 3 verify fixes and inspect only their repair deltas for directly introduced defects.
-- A clean round closes the session early; Round 3 always closes it.
+This skill manages review and does not itself authorize source changes. When an invoking workflow already authorizes fixes, return control to it after reconciliation; otherwise await an explicit fix request.
 
-This skill manages review and does not itself authorize source changes. When the invoking request or workflow already authorizes fixes, return control to that workflow after reconciliation; otherwise await an explicit fix request.
+## Review policy
+
+Choose the policy from the invocation:
+
+- **Manual review:** when the user invokes this skill directly, run exactly one round and return. The user decides whether and how many times to invoke it again. Keep the same-target reviewer session resumable with no round limit until the user explicitly requests a fresh review, ends it, or changes targets.
+- **Workflow review:** when another workflow reaches an explicit review gate, use at most three rounds. A clean round closes the session early; Round 3 closes it regardless.
+
+Both policies use the same convergence rule: Round 1 performs bounded discovery; every later round is focused verification of existing findings and the repair delta. A fresh broad review requires an explicit fresh-review request or a materially different target.
 
 ## 1. Start or resume
 
-Resume the existing `reviewer` subagent session when the current conversation contains an active review for the same target. Retain its session ID, round number, initial target and baseline, finding IDs and dispositions, and the repairs attempted since its last response. Start a new reviewer session only when no matching active review exists.
+Resume the existing `reviewer` subagent session when the conversation contains a review for the same target. Retain its session ID, round number, initial target and baseline, finding IDs and dispositions, repairs since the last response, and review policy. Start a new reviewer session when no matching session exists, the target materially changes, or the user explicitly requests a fresh review.
 
-Choose the initial target in this order:
+Choose the target in this order:
 
 1. the target explicitly named by the user;
 2. changes completed in the current task;
@@ -26,16 +31,16 @@ Choose the initial target in this order:
 
 Resolve repository facts directly. Ask the user only when multiple materially different targets remain plausible.
 
-Completion criterion: the target is identifiable, the baseline is explicit or `AUTO`, and the review is classified as a new session or a continuation of a known session.
+Completion criterion: the target is identifiable, the baseline is explicit or `AUTO`, the policy is known, and the review is classified as a new session or a continuation with a known next round.
 
 ## 2. Build the round prompt
 
-### Round 1 review brief
+### Round 1: discovery
 
-Send the reviewer a brief with this semantic content:
+Send this semantic content:
 
 ```markdown
-# Review round 1 of 3
+# Review round 1
 
 ## Target
 <working tree, commit, range, or files>
@@ -47,7 +52,7 @@ Send the reviewer a brief with this semantic content:
 <requirements extracted from the conversation, or UNKNOWN>
 
 ## Authorities
-<explicitly authoritative spec/plan paths and sections; where silent, say what governs>
+<documents, repository rules, or requirements established as authoritative for this target; NONE when no additional authority exists>
 
 ## Scope
 <included and excluded behavior>
@@ -65,16 +70,18 @@ Send the reviewer a brief with this semantic content:
 <key entry points, constraints, or known concerns>
 ```
 
-Mark missing intent as `UNKNOWN` rather than inventing it. Designate a spec or plan as authoritative only when the conversation or current repository establishes that status. Do not treat completed planning documents as authoritative by default.
+Mark missing intent as `UNKNOWN` rather than inventing it. Authorities identify target-specific correctness sources; the risk profile separately describes the environment and assurance bar.
 
-Completion criterion: the brief identifies the target and baseline, supplies or marks intent unknown, and gives the reviewer enough project context to apply a realistic correctness bar.
+When an invoking workflow supplies authoritative material, include it. In an `implement` session this means the task's authoritative design and active slice. For a standalone review, use only authority established by the user's request, current conversation, or repository instructions; a nearby design or task is not automatically authoritative. Write `NONE` when no additional authority is established. A fully completed implementation task is historical execution evidence rather than behavioral authority.
 
-### Rounds 2 and 3 verification brief
+Completion criterion: the brief identifies target and baseline, supplies or marks intent unknown, and gives the reviewer enough context to apply a realistic correctness bar.
 
-Continue the exact prior reviewer session and send:
+### Later rounds: focused verification
+
+Continue the same reviewer session and send:
 
 ```markdown
-# Verification round <2|3> of 3
+# Verification round <N>
 
 This is focused verification in the existing session, not a fresh review.
 
@@ -82,36 +89,38 @@ This is focused verification in the existing session, not a fresh review.
 - F1: <fix attempted, accepted risk, disputed, deferred, or other disposition>
 
 ## Repair delta
-- <file/function and the behavioral change made since the previous review>
+- <file/function and behavioral change since the previous round, or None>
 
 ## Validation performed
 - <command and result>
 
-Verify the submitted findings and the repair delta. Preserve finding IDs. A new
-finding must be a concrete correctness defect causally introduced by this repair.
+Verify the submitted findings and repair delta. Preserve finding IDs. A new finding
+must be a concrete correctness defect causally introduced by the repair.
 ```
 
-Derive the repair delta from edits made by the invoking agent and current repository state. When the user edited the code, obtain a concise account from them only if the changed regions cannot be identified locally. Describe behavioral changes and exact locations; the reviewer can read the files directly.
+Derive the repair delta from edits made by the invoking workflow and current repository state. Ask the user for a concise account only when their changed regions cannot be identified locally. Describe behavioral changes and exact locations.
 
-Completion criterion: every open finding has a disposition and every repair made since the prior round is represented in the repair delta.
+Completion criterion: every open finding has a disposition and every repair since the prior round is represented; an unchanged manual rerun explicitly records `Repair delta: None`.
 
 ## 3. Invoke reviewer
 
-For Round 1, run the `reviewer` definition in a new subagent session. For later rounds, call `run` with the saved reviewer `sessionId`; do not open a replacement session. Use a short user-visible task naming the round and target, and put the complete brief in the prompt.
+For Round 1, start a new `reviewer` subagent session. For later rounds, continue the saved `sessionId`; never replace it merely to obtain broader discovery. Use a short user-visible task naming the round and target, and send the complete brief.
 
-Completion criterion: the reviewer returns a clean result, a finding/status set, or a precise blocked result.
+Completion criterion: the reviewer returns a clean result, finding/status set, or precise blocked result.
 
 ## 4. Reconcile and report
 
-Check cited code before presenting findings as confirmed. Account for every reviewer item as confirmed, disputed, accepted risk, deferred, or needing clarification. Continue the same session for reviewer clarification; clarification does not consume another review round when no changed code is being verified.
+Check cited code before presenting findings as confirmed. Account for every reviewer item as confirmed, disputed, accepted risk, deferred, obsolete, or needing clarification. Continue the same session for clarification; clarification without changed code does not consume a review round.
 
-After each response, report to the invoking user or workflow:
+After each response, report:
 
-- completed round and maximum of three;
-- current status of every finding ID;
+- the completed round and review policy;
+- every finding ID and disposition;
 - validation results and review limits;
-- whether the session is awaiting fixes or closed.
+- whether the session awaits fixes, is clean but resumable, or is closed.
 
-Close the session immediately when a round has no unresolved admissible findings. After Round 3, close it regardless and report any unresolved findings without initiating Round 4.
+Under manual policy, return after this one round and keep the session resumable, including after a clean result. Close it only when the user requests closure, starts a fresh review, or changes targets.
 
-Completion criterion: every finding and blocker has a disposition, and the user can tell whether the review passed, awaits fixes, or ended with unresolved items.
+Under workflow policy, close immediately after a round with no unresolved admissible findings. Round 3 always closes; report unresolved findings without opening Round 4.
+
+Completion criterion: every finding and blocker has a disposition, and the caller can tell the session state and what another invocation would do.

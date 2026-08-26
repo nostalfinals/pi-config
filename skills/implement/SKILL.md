@@ -1,85 +1,105 @@
 ---
 name: implement
-description: Implement one unfinished slice from an explicitly selected task according to its approved `SPEC.md` and `PLAN.md`, validate and independently review it, and record its result.
+description: Implement one unfinished slice from an explicitly selected implementation task, validate and independently review it, and record its result.
 ---
 
-Implement exactly one unfinished, unblocked slice from `docs/agent-tasks/<short-purpose>/`. The user must explicitly identify the task; they may optionally identify a slice. If no slice is named, select the next actionable slice whose dependencies are complete.
+# Implement
 
-The workflow is AFK after task selection. Resolve minor details from the task documents and established repository conventions without asking the user. Continue while actionable in-scope work remains. Stop only when the slice is complete or a specific material blocker makes further progress impossible without a user decision, additional authority, or an unavailable required dependency. Partial progress, elapsed effort, and unavailable optional or human-dependent checks are not blockers. Never continue to or prepare the next slice.
+Implement exactly one unfinished, unblocked slice from an explicitly selected `docs/agent-tasks/<short-purpose>.md`. The task must identify one authoritative design document. The user must identify the task and may identify a slice; otherwise select the next actionable slice whose dependencies are complete.
+
+The workflow is AFK after task selection. Resolve minor details from the authoritative design, task, current code, and repository conventions without asking the user. Stop only when the slice is complete or a material blocker requires a user decision, additional authority, or an unavailable required dependency. Never continue to or prepare the next slice.
 
 ## Sources of truth
 
-- `SPEC.md`: behavior, design decisions, constraints, non-goals, and acceptance criteria.
-- `PLAN.md`: slice scope, order, dependencies, validation, and progress.
-- Repository instructions and conventions remain binding unless explicitly superseded by the approved specification.
+- The authoritative design document owns intended behavior, public API, contracts, constraints, invariants, and non-goals.
+- The implementation task owns slice scope, order, dependencies, validation, and progress.
+- Repository instructions remain binding unless the design explicitly supersedes them.
+- Current source is implementation reality, not authority to silently contradict the design.
 
 ## 1. Load and verify the slice
 
 Before editing:
 
-1. Read repository instructions and the selected task's `SPEC.md` and `PLAN.md` completely.
+1. Read repository instructions, the task, and its referenced design document completely.
 2. Inspect the working tree and preserve unrelated changes.
-3. Select the named slice, or the next unfinished and unblocked slice if none was named.
-4. Inspect the relevant source and tests, trace current behavior, and confirm the slice still matches the codebase.
-5. Confirm its dependencies, scope, validation, and external requirements.
+3. Select the named slice, or the next unfinished and unblocked slice.
+4. Trace relevant source, callers, tests, and current behavior.
+5. Confirm the slice's design references, dependencies, scope, validation, and external requirements still match the codebase.
 
 If no slice is actionable, report why and stop.
 
-Stop without changing the approved documents or expanding scope when:
+Stop without changing the authoritative design or expanding scope when:
 
-- required behavior is materially ambiguous or `SPEC.md` and `PLAN.md` conflict;
-- an approved boundary or design decision must change;
+- the design is materially ambiguous, incomplete, internally contradictory, or conflicts with the task;
+- an approved boundary, API, or design decision must change;
 - the slice must materially expand or split into separate outcomes;
-- the current code invalidates a material assumption;
-- implementation exposes an unmade migration, compatibility, security, destructive-data, or unavailable-dependency decision.
+- current code invalidates a material planning assumption;
+- implementation exposes an unmade migration, compatibility, security, destructive-data, performance, or unavailable-dependency decision.
+
+State the exact design gap or required decision so the work can return to `/design`; do not invent the missing contract in the task.
+
+This step is complete when one slice is actionable and its complete behavioral and execution boundary is known.
 
 ## 2. Implement the selected outcome
 
-Follow the specification, slice boundaries, and repository conventions. Implement only what is needed for the selected observable outcome; avoid later-slice work, unrelated refactoring, and intentionally incomplete horizontal layers.
+Follow the design, slice boundary, and repository conventions. Implement only what is needed for the selected observable outcome; avoid later-slice work, unrelated refactoring, and intentionally incomplete horizontal layers.
 
-When behavior can be meaningfully verified automatically, use Test-Driven Development and follow the `tdd` skill. Do not force TDD or add low-value tests for code that is not suitably testable.
+When behavior can be meaningfully verified automatically, use Test-Driven Development and follow the `tdd` skill. Do not force TDD or add low-value tests for unsuitable code.
 
-Report unrelated defects without fixing them. If one blocks the slice, fix only what is strictly necessary when doing so stays within the approved boundaries; otherwise mark the slice blocked.
+Report unrelated defects without fixing them. If one blocks the slice, fix only what is strictly necessary when it remains inside the approved boundary; otherwise record the blocker.
+
+This step is complete when the selected outcome and every slice-owned design obligation are implemented with no later-slice or unrelated changes.
 
 ## 3. Validate
 
-Run the slice's specified validation and the smallest relevant focused checks. Fix only failures caused by or within the scope of this slice, rerunning the affected checks afterward. Record unrelated or pre-existing failures accurately.
+Run the task's specified slice validation and the smallest relevant focused checks. Fix failures caused by or within this slice and rerun affected checks. Record unrelated or pre-existing failures accurately.
 
-If a planned check requires human involvement or cannot run in the available environment, continue implementation, run the strongest feasible substitute, and record the skipped check and resulting uncertainty. Never claim that the skipped check passed.
+If a planned check cannot run in the environment, run the strongest feasible substitute and record the skipped check and uncertainty. Never claim an unrun check passed.
+
+This step is complete when every agent-executable required check passes and every unavailable check has an explicit substitute or limitation.
 
 ## 4. Review and repair
 
-Invoke and follow the `ask-for-review` skill for the selected slice's complete current change set. Give it the slice outcome and acceptance criteria, authoritative `SPEC.md` and `PLAN.md` sections, scope boundaries, validation, and the pre-slice Git baseline.
+Invoke and follow `ask-for-review` under its workflow-review policy for the selected slice's complete current change set. Give it:
 
-Reconcile every finding against the cited code and approved task documents. For each confirmed in-scope correctness finding:
+- the slice outcome and design references;
+- the authoritative design sections and invariants;
+- the task's scope, exclusions, dependencies, and validation;
+- the pre-slice Git baseline.
+
+Reconcile every finding against cited code, design, and task. For each confirmed in-scope correctness finding:
 
 1. repair it within the selected slice;
 2. run the smallest relevant validation;
-3. continue the same reviewer session with the finding disposition, repair delta, and validation result.
+3. continue the same reviewer session with the finding disposition, repair delta, and result.
 
-Use the same reviewer session for every verification round and clarification. Give disputed findings concrete code or requirement evidence. Report unrelated or out-of-scope defects without fixing them. Apply the material stop conditions when a finding requires changed boundaries, a new design decision, expanded scope, or unavailable authority.
+Use the same reviewer session for every verification round and clarification. Report unrelated or out-of-scope defects without fixing them. Apply the material stop conditions when a finding requires changed design, boundaries, scope, or authority.
 
-The review passes cleanly when a reviewer round has no unresolved admissible findings. If Round 3 closes with remaining findings, reconcile them without opening another review round. Fix every confirmed in-scope finding and rerun the relevant validation. Apply the material stop conditions only when a finding cannot be resolved within the approved slice. Record any final repairs that were not independently reverified and the resulting uncertainty.
+The review passes when a round has no unresolved admissible findings. If Round 3 closes with findings, fix every confirmed in-scope issue that remains resolvable, rerun validation, and record any final repair not independently reverified and its uncertainty.
+
+This step is complete when review has closed and every finding has a disposition with no unresolved in-scope issue that can be fixed under the authoritative design.
 
 ## 5. Record the result
 
-Update only the selected slice and directly affected progress in `PLAN.md`.
+Update only the selected slice and directly affected progress in the implementation task. Do not update the design document to record implementation progress.
 
-Treat the slice as complete when all required implementation work, all agent-executable validation, and independent review are complete. Then:
+For a completed slice:
 
 - mark its progress checkbox and status complete;
-- append concise completed-work, validation, and review results, including the final round and finding dispositions;
-- record any deviation from the original notes and why it did not change the approved behavior or boundaries, or state `Deviations: None`.
+- append concise completed-work, validation, and review results;
+- record deviations from implementation notes and why they preserve the design, or state `Deviations: None`.
 
-If genuinely blocked by one of the material stop conditions:
+For a material blocker:
 
-- leave its checkbox unchecked and set its status to `Blocked`;
-- record completed and partial work, the exact blocker, and the decision, authority, or dependency required to continue.
+- leave its checkbox unchecked and mark the slice blocked;
+- record completed and partial work, the exact blocker, and the design decision, authority, or dependency required.
 
-Do not rewrite the original plan to hide a deviation.
+Do not rewrite the original task to hide a deviation.
+
+This step is complete when the task accurately records the slice's implementation, evidence, review, and disposition.
 
 ## 6. Final inspection and stop
 
-Inspect the complete diff. Remove accidental changes, confirm no later-slice or unrelated work slipped in, and verify that the implementation, focused tests, review result, `SPEC.md`, and `PLAN.md` agree.
+Inspect the complete diff. Remove accidental changes and confirm that implementation, tests, review, design, and task agree; no later-slice or unrelated work may remain.
 
-Report the selected slice, changes, validation, review outcome and finding dispositions, deviations, blockers or environment limits, unrelated discoveries, and the `PLAN.md` update. Then stop and wait for an explicit request for another slice.
+Report the selected slice, changes, validation, review findings and dispositions, deviations, blockers or environment limits, unrelated discoveries, and task update. Then stop and wait for an explicit request for another slice.
