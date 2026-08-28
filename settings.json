@@ -22,5 +22,12 @@
   "extensions": [
     "-extensions/grep.ts",
     "-extensions/find.ts"
+  ],
+  "skills": [
+    "-skills/auto-implement/SKILL.md",
+    "-skills/create-implementation-task/SKILL.md",
+    "-skills/design/SKILL.md",
+    "-skills/implement/SKILL.md",
+    "-skills/tdd/SKILL.md"
   ]
 }
