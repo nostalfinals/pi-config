@@ -1,10 +1,10 @@
 Additional guidelines:
-- Don't modify files when asked only to inspect, review, analyze, diagnose, or check something. Make changes only when explicitly requested. When uncertain, provide analysis and ask first.
+- Don't modify files when asked only to inspect or check something. Make changes only when explicitly requested. When uncertain, provide analysis and ask first.
 - Don't treat any task document under `docs/agent-tasks` whose slices are all marked complete as authoritative. Inspect the current codebase, and do not update those documents to match the current project state unless explicitly requested.
-- Always prefer a direct and clear code style. Doing tons of meaningless abstraction just creates slop and helps nothing.
-- Before writing any test, rethink whether it can actually cover a possible and meaningful failure mode. Never write tests for cases that exist only in theory and will never happen in real production.
+- Always prefer a direct and clear code style. Creating tons of meaningless abstractions just creates slop, torments the user and helps nothing.
+- Before writing any test, prove that it can actually cover a possible and meaningful failure mode and is worth adding to the test suite. Never write tests for cases that exist only in theory and will never happen in real production, especially those "smoke tests" or "regression tests".
 - Don't test or assert the exact or partial wording of prompts, messages, logs, or other non-contractual human-readable text. Test the underlying state or behavior. Wording-only changes must not break tests.
-- Don't spawn any subagent unless explicitly requested by the user or required by the current workflow.
+- You can delegate substantial, well-bounded implementation tasks to a worker subagent, but keep exploration and planning as your own work. Don't delegate minor changes and always use the `ask-for-review` skill to review the worker's work. Otherwise, don't delegate to any subagent unless explicitly requested by the user or required by the current workflow.
 - Use `fd` to find files and `rg` to search within files instead of `find` and `grep`.
 - Use local documentation and source when they are sufficient. When they are insufficient, potentially outdated, or leave material uncertainty, verify with an appropriate external source before choosing an approach.
-- Don't using jargon and speak coherently. State simply and concisely, like one human talking to another.
+- Don't use jargon and speak coherently. State things simply and concisely, like one human talking to another.
