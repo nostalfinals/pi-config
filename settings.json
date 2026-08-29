@@ -13,7 +13,7 @@
         "-index.ts"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@5d91efd30d220ffeeb6778e05215359a8758084f",
+    "git:github.com/nostalfinals/cooperate@d5fbe684bd92519ce99474552e6c6f210a0de4a2",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
