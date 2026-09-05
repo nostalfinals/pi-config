@@ -18,12 +18,12 @@
     },
     {
       "provider": "openai-codex",
-      "model": "gpt-5.6-luna-fast",
+      "model": "gpt-5.6-luna",
       "thinkingLevel": "max"
     },
     {
       "provider": "openai-codex",
-      "model": "gpt-5.6-luna-fast",
+      "model": "gpt-5.6-luna",
       "thinkingLevel": "xhigh"
     },
     {

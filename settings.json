@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.84.3",
+  "lastChangelogVersion": "0.85.0",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
@@ -21,7 +21,8 @@
   },
   "extensions": [
     "-extensions/grep.ts",
-    "-extensions/find.ts"
+    "-extensions/find.ts",
+    "-extensions/openai-fast.ts"
   ],
   "skills": [
     "-skills/auto-implement/SKILL.md",
@@ -29,5 +30,6 @@
     "-skills/design/SKILL.md",
     "-skills/implement/SKILL.md",
     "-skills/tdd/SKILL.md"
-  ]
+  ],
+  "tuiMode": "regular"
 }
