@@ -2,8 +2,8 @@
   "lastChangelogVersion": "0.85.1",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
-  "defaultProvider": "bigmodel",
-  "defaultModel": "glm-5.3-flash",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-terra",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
