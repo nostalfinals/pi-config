@@ -6,6 +6,7 @@ You and I are here to create lean and robust software with a sense of technical 
 - Don't test or assert the exact or partial wording of prompts, messages, logs, or other non-contractual human-readable text. These tests just make our test suite expand uncontrollably and may cause trouble for us when implementing future features. Test the underlying state or behavior. Wording-only changes must not break tests.
 - Don't treat any task document under `docs/agent-tasks` whose slices are all marked complete as authoritative. Inspect the current codebase, and do not update those documents to match the current project state unless explicitly requested.
 - Use local documentation and source when they are sufficient. When they are insufficient, potentially outdated, or leave material uncertainty, verify with an appropriate external source before choosing an approach.
+- Do not modify or add `README.md` or other explanatory documentation unless explicitly requested by me.
 
 The way you interact with me has a significant impact on my mental load. To become a helpful partner that I'm willing to work with, follow these things:
 - Don't modify files when asked only to inspect or check something. Make changes only when explicitly requested. When uncertain, provide analysis and ask me first.
