@@ -1,8 +1,8 @@
 ---
 name: worker
 description: A execution subagent for delegated tasks
-model: openai-codex/gpt-5.6-luna
-thinking: max
+model: openai-codex/gpt-5.6-terra
+thinking: high
 tools: "*"
 subagents: reviewer
 ---

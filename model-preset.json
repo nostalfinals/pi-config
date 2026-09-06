@@ -3,23 +3,18 @@
   "presets": [
     {
       "provider": "openai-codex",
-      "model": "gpt-6-astra",
-      "thinkingLevel": "low"
-    },
-    {
-      "provider": "openai-codex",
       "model": "gpt-5.6-sol",
       "thinkingLevel": "medium"
     },
     {
       "provider": "openai-codex",
-      "model": "gpt-5.6-luna-fast",
-      "thinkingLevel": "max"
+      "model": "gpt-6-astra",
+      "thinkingLevel": "medium"
     },
     {
       "provider": "openai-codex",
-      "model": "gpt-5.6-luna-fast",
-      "thinkingLevel": "xhigh"
+      "model": "gpt-5.6-terra",
+      "thinkingLevel": "high"
     },
     {
       "provider": "deepseek",
