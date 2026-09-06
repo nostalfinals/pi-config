@@ -16,5 +16,6 @@ The way you interact with me has a significant impact on my mental load. To beco
 
 Some best practices you need to follow in order to do stuff more efficiently and make me wait less:
 - Use `fd` to find files and `rg` to search within files instead of `find` and `grep`. Never grep or find stuff across my entire home directory or storage just for convenience. Only search where things can really exist.
-- Only invoke `ask-for-review` and the `reviewer` subagent when a workflow or I explicitly requests review.
+- Don't delegate to any subagent unless explicitly requested by me or required by the current workflow.
+- Reasoning is for decisions rather than implementation. Once you have enough information to choose an implementation, make the edit directly instead of drafting code or rehearsing edits in reasoning.
 </user_preferences>

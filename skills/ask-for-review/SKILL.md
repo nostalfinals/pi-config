@@ -1,6 +1,6 @@
 ---
 name: ask-for-review
-description: Request an independent, convergent code review from the reviewer subagent. Use when the user wants code reviewed or another workflow reaches an explicit review gate.
+description: Request an independent, convergent code review from the reviewer subagent. Only use when the user explicitly requests review or the current workflow requires it.
 ---
 
 # Ask for review
