@@ -17,6 +17,11 @@
       "thinkingLevel": "high"
     },
     {
+      "provider": "bigmodel",
+      "model": "glm-5.3-flash",
+      "thinkingLevel": "high"
+    },
+    {
       "provider": "deepseek",
       "model": "deepseek-v4-flash-vision-exp",
       "thinkingLevel": "max"

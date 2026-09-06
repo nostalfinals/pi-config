@@ -2,8 +2,8 @@
   "lastChangelogVersion": "0.85.1",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-terra",
+  "defaultProvider": "bigmodel",
+  "defaultModel": "glm-5.3-flash",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
@@ -13,7 +13,7 @@
         "-index.ts"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@d48c73ad886c1f3a1875b3f4f6357f410656d06e",
+    "git:github.com/nostalfinals/cooperate@e7c4bda4b55f376ef8518d7494bd0c5c1ff25fd3",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
@@ -26,5 +26,8 @@
     "-skills/implement/SKILL.md",
     "-skills/tdd/SKILL.md"
   ],
-  "tuiMode": "regular"
+  "tuiMode": "regular",
+  "extensions": [
+    "-extensions/openai-fast.ts"
+  ]
 }
