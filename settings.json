@@ -13,7 +13,7 @@
         "-index.ts"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@e7c4bda4b55f376ef8518d7494bd0c5c1ff25fd3",
+    "git:github.com/nostalfinals/cooperate@330b220f81620f4e14ffc2ed0ef08c9601338fcf",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
@@ -26,7 +26,7 @@
     "-skills/implement/SKILL.md",
     "-skills/tdd/SKILL.md"
   ],
-  "tuiMode": "regular",
+  "tuiMode": "fullscreen",
   "extensions": [
     "-extensions/openai-fast.ts"
   ]
