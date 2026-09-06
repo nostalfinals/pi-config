@@ -1,9 +1,9 @@
 {
-  "lastChangelogVersion": "0.85.0",
+  "lastChangelogVersion": "0.85.1",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-luna",
+  "defaultModel": "gpt-5.6-luna-fast",
   "defaultThinkingLevel": "xhigh",
   "hideThinkingBlock": true,
   "packages": [
@@ -13,17 +13,12 @@
         "-index.ts"
       ]
     },
-    "git:github.com/nostalfinals/cooperate@d5fbe684bd92519ce99474552e6c6f210a0de4a2",
+    "git:github.com/nostalfinals/cooperate@d48c73ad886c1f3a1875b3f4f6357f410656d06e",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
     "showTerminalProgress": true
   },
-  "extensions": [
-    "-extensions/grep.ts",
-    "-extensions/find.ts",
-    "-extensions/openai-fast.ts"
-  ],
   "skills": [
     "-skills/auto-implement/SKILL.md",
     "-skills/create-implementation-task/SKILL.md",

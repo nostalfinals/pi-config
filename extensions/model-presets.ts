@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DynamicBorder, getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { Container, SelectList, Text, type KeyId } from "@earendil-works/pi-tui";
+import { Container, SelectList, Spacer, Text, type KeyId } from "@earendil-works/pi-tui";
 
 export const CONFIG_PATH = join(getAgentDir(), "model-preset.json");
 export const DEFAULT_SHORTCUT: KeyId = "alt+shift+m";
@@ -144,6 +144,7 @@ export async function selectModelPreset(
     const container = new Container();
     container.addChild(new DynamicBorder((text: string) => theme.fg("accent", text)));
     container.addChild(new Text(theme.fg("accent", theme.bold("Model Preset")), 1, 0));
+    container.addChild(new Spacer(1));
 
     const list = new SelectList(items, Math.min(items.length, 10), {
       selectedPrefix: (text) => theme.fg("accent", text),
@@ -157,7 +158,8 @@ export async function selectModelPreset(
     list.onSelect = (item) => done(item.value);
     list.onCancel = () => done(null);
     container.addChild(list);
-    container.addChild(new Text(theme.fg("dim", "↑↓ navigate • enter select • esc cancel"), 1, 0));
+    container.addChild(new Spacer(1));
+    container.addChild(new Text(theme.fg("dim", "↑↓ navigate · enter select · esc cancel"), 1, 0));
     container.addChild(new DynamicBorder((text: string) => theme.fg("accent", text)));
 
     return {

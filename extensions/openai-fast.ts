@@ -1,9 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { builtinProviders } from "@earendil-works/pi-ai/providers/all";
 import type { Model, Provider } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { getAgentDir } from "@earendil-works/pi-coding-agent";
+import { getAgentDir, ModelRuntime } from "@earendil-works/pi-coding-agent";
 
 const CONFIG_PATH = join(getAgentDir(), "openai-fast.json");
 const SUPPORTED_PROVIDERS = ["openai", "openai-codex"] as const;
@@ -365,16 +364,19 @@ function notifyErrors(ctx: ExtensionContext, errors: string[]): void {
   ctx.ui.notify(`Invalid openai-fast config (${CONFIG_PATH}):\n${errors.join("\n")}`, "error");
 }
 
-export default function openaiFast(pi: ExtensionAPI): void {
+export default async function openaiFast(pi: ExtensionAPI): Promise<void> {
   const config = loadConfig();
   const aliasesById = new Map<string, FastAlias>();
   const errors = [...config.errors];
 
-  // Register native overlays during extension loading. This keeps the aliases
-  // available to --list-models and to initial model resolution, while retaining
-  // the original provider auth and stream implementation.
+  // Load Pi's effective built-in catalog rather than the package's static
+  // catalog. The effective providers include persisted remote catalog updates,
+  // so registering this native overlay does not hide newly released models.
+  // Doing this during extension loading keeps aliases available to --list-models
+  // and initial model resolution.
+  const catalogRuntime = await ModelRuntime.create();
   const providers = new Map<FastProvider, Provider>();
-  for (const provider of builtinProviders()) {
+  for (const provider of catalogRuntime.getProviders()) {
     if (SUPPORTED_PROVIDERS.includes(provider.id as FastProvider)) {
       providers.set(provider.id as FastProvider, provider);
     }
