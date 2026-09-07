@@ -156,14 +156,13 @@ class PromptViewer {
 		const pos = `lines ${this.scrollOffset + 1}-${Math.min(this.scrollOffset + page, lines.length)} of ${lines.length}`;
 		const scrollHints = `${canUp ? "↑ " : ""}${canDown ? "↓ " : ""}`.trim();
 		out.push(
-			"  " +
+			" " +
 				th.fg("accent", pos) +
 				(scrollHints ? th.fg("dim", `  ${scrollHints}`) : ""),
 		);
 		out.push(
-			th.fg("dim", "  ↑↓/j/k scroll · PgUp/PgDn page · Home/End jump · Esc/q close"),
+			th.fg("dim", " ↑↓/j/k scroll · pgup/pgdn page · home/end jump · esc/q close"),
 		);
-		out.push("");
 
 		return out.map((line) => truncateToWidth(line, width, "", true));
 	}

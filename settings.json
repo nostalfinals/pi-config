@@ -26,8 +26,5 @@
     "-skills/implement/SKILL.md",
     "-skills/tdd/SKILL.md"
   ],
-  "tuiMode": "fullscreen",
-  "extensions": [
-    "-extensions/openai-fast.ts"
-  ]
+  "tuiMode": "fullscreen"
 }
