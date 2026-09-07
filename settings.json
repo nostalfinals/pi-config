@@ -7,24 +7,11 @@
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
-    {
-      "source": "git:github.com/nostalfinals/pi-sandbox",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
     "git:github.com/nostalfinals/cooperate@15e3e22aec2e2ddb3ffffca75b81b6abca7be8c4",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
     "showTerminalProgress": true
   },
-  "skills": [
-    "-skills/auto-implement/SKILL.md",
-    "-skills/create-implementation-task/SKILL.md",
-    "-skills/design/SKILL.md",
-    "-skills/implement/SKILL.md",
-    "-skills/tdd/SKILL.md"
-  ],
   "tuiMode": "fullscreen"
 }

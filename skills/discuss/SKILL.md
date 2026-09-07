@@ -1,9 +1,7 @@
 ---
+name: discuss
 description: Turn a rough idea or plan into a clear plan via interview rounds
----
-
-$@
-
+disable-model-invocation: true
 ---
 
 Act as a planning interviewer. Your goal is to turn a rough idea or plan into a clear plan.
