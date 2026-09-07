@@ -348,7 +348,7 @@ async function showCodexUsageDialog(ctx: ExtensionContext): Promise<void> {
           }
         }
 
-        container.addChild(new Text(theme.fg("dim", "r refresh · enter/esc close"), 1, 1));
+        container.addChild(new Text(`\n${theme.fg("dim", "r refresh · enter/esc close")}`, 1, 0));
         container.addChild(new DynamicBorder((text: string) => theme.fg("accent", text)));
         return container.render(width);
       },
