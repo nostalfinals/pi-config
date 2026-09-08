@@ -195,6 +195,16 @@ function defaultComposeBody(ctx: BodyComposeContext): string[] {
   return body;
 }
 
+// Pi renders custom messages as a padded, background-filled card. The transcript
+// stays flat, so drop that shell and keep only the rendered content.
+function renderCustomMessage(component: Component, width: number, theme: Theme) {
+  const background = theme.getBgAnsi("customMessageBg");
+  const lines = component.render(width).map((line) =>
+    trimRenderedLine(line.split(background).join("\x1b[49m")),
+  );
+  return ordinaryTrim(lines);
+}
+
 function renderUserMessage(component: Container, width: number, theme: Theme) {
   const outputPad = Math.max(
     0,
@@ -490,10 +500,13 @@ export function installToolIndicators(pi: ExtensionAPI) {
       child.constructor.name === "SkillInvocationMessageComponent";
     const isTranscriptTool = (child: Component) =>
       child instanceof ToolExecutionComponent || isSkillInvocation(child);
+    const isCustomMessage = (child: Component) =>
+      child.constructor.name === "CustomMessageComponent";
     if (
       !transcriptContainers.has(this) &&
       !children.some((child) =>
-        isTranscriptTool(child) || child.constructor.name === "UserMessageComponent"
+        isTranscriptTool(child) || isCustomMessage(child) ||
+        child.constructor.name === "UserMessageComponent"
       )
     ) {
       return originalContainerRender.call(this, width);
@@ -509,6 +522,8 @@ export function installToolIndicators(pi: ExtensionAPI) {
       let lines: string[];
       if (isTranscriptTool(child)) {
         lines = child.render(width);
+      } else if (isCustomMessage(child)) {
+        lines = renderCustomMessage(child, width, activeTheme!);
       } else if (componentName !== "UserMessageComponent") {
         lines = ordinaryTrim(child.render(width));
       } else {

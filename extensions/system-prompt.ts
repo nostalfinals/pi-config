@@ -90,6 +90,10 @@ class PromptViewer {
 		return lines;
 	}
 
+	private gutterWidth(): number {
+		return Math.max(1, String(this.rawLines.length).length);
+	}
+
 	private pageSize(): number {
 		// Reserve rows for borders, title, header, footer, editor and status bar.
 		const rows = process.stdout.rows ?? 40;
@@ -132,12 +136,13 @@ class PromptViewer {
 		const out: string[] = [""];
 
 		for (const line of this.headerLines) {
-			out.push(`  ${th.fg("dim", line)}`);
+			out.push(` ${th.fg("dim", line)}`);
 		}
 		out.push("");
 
-		// "  " indent + "12345" line number + " │ " separator
-		const prefixWidth = 2 + 5 + 3;
+		// Right-aligned line number + " │ " separator, plus one spare column.
+		const gutterWidth = this.gutterWidth();
+		const prefixWidth = 1 + gutterWidth + 3;
 		const wrapWidth = Math.max(20, width - prefixWidth - 1);
 		const lines = this.getVisualLines(wrapWidth);
 		const page = this.pageSize();
@@ -145,9 +150,9 @@ class PromptViewer {
 
 		for (const item of visible) {
 			const lineNo =
-				item.lineNo !== undefined ? String(item.lineNo).padStart(5, " ") : " ".repeat(5);
+				item.lineNo !== undefined ? String(item.lineNo).padStart(gutterWidth, " ") : " ".repeat(gutterWidth);
 			const text = th.fg("text", item.text);
-			out.push(`  ${th.fg("dim", `${lineNo} │ `)}${text}`);
+			out.push(` ${th.fg("dim", `${lineNo} │ `)}${text}`);
 		}
 		out.push("");
 
@@ -161,7 +166,7 @@ class PromptViewer {
 				(scrollHints ? th.fg("dim", `  ${scrollHints}`) : ""),
 		);
 		out.push(
-			th.fg("dim", " ↑↓/j/k scroll · pgup/pgdn page · home/end jump · esc/q close"),
+			th.fg("dim", " ↑↓/j/k navigate · pgup/pgdn page · home/end jump · esc close"),
 		);
 
 		return out.map((line) => truncateToWidth(line, width, "", true));

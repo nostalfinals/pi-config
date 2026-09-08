@@ -35,10 +35,11 @@ interface Aggregate {
   files: FileStats[];
 }
 
-type Period = "all" | "7d" | "30d";
+type Period = "all" | "today" | "7d" | "30d";
 
 const PERIODS: ReadonlyArray<{ value: Period; label: string }> = [
   { value: "all", label: "All" },
+  { value: "today", label: "Today" },
   { value: "7d", label: "Recent 7 days" },
   { value: "30d", label: "Recent 30 days" },
 ];
@@ -194,7 +195,7 @@ function addFileStats(aggregate: Aggregate, fileStats: FileStats): void {
 function aggregateForPeriod(aggregate: Aggregate, period: Period): Aggregate {
   if (period === "all") return aggregate;
 
-  const days = period === "7d" ? 7 : 30;
+  const days = period === "today" ? 1 : period === "7d" ? 7 : 30;
   const start = new Date();
   start.setUTCDate(start.getUTCDate() - (days - 1));
   const startDay = start.toISOString().slice(0, 10);
@@ -327,7 +328,7 @@ class StatsViewer {
       const index = PERIODS.findIndex(({ value }) => value === this.period);
       this.period = PERIODS[(index + 1) % PERIODS.length].value;
       this.scrollOffset = 0;
-    } else if (data === "r" || data === "R") {
+    } else if (this.state.kind !== "scanning" && (data === "r" || data === "R")) {
       this.scrollOffset = 0;
       this.scan(true);
       return;
@@ -357,6 +358,15 @@ class StatsViewer {
     const border = (text: string) => th.fg("accent", text);
     container.addChild(new DynamicBorder(border));
     container.addChild(new Text(border(th.bold("Stats")), 1, 0));
+    if (this.state.kind === "scanning") {
+      const pct = this.state.total > 0 ? Math.round((this.state.done / this.state.total) * 100) : 0;
+      container.addChild(new Spacer(1));
+      container.addChild(new Text(th.fg("muted", `Scanning sessions… ${this.state.done}/${this.state.total} (${pct}%)`), 1, 0));
+      container.addChild(new Spacer(1));
+      container.addChild(new DynamicBorder(border));
+      return container.render(width);
+    }
+
     container.addChild(new Spacer(1));
     const tabs = PERIODS.map(({ value, label }) => {
       const tab = ` ${label} `;
@@ -365,10 +375,7 @@ class StatsViewer {
     container.addChild(new Text(tabs, 1, 0));
     container.addChild(new Spacer(1));
 
-    if (this.state.kind === "scanning") {
-      const pct = this.state.total > 0 ? Math.round((this.state.done / this.state.total) * 100) : 0;
-      container.addChild(new Text(th.fg("muted", `Scanning sessions… ${this.state.done}/${this.state.total} (${pct}%)`), 1, 0));
-    } else if (this.state.kind === "error") {
+    if (this.state.kind === "error") {
       container.addChild(new Text(th.fg("error", `Failed to collect stats: ${this.state.message}`), 1, 0));
     } else {
       const aggregate = this.displayedAggregate()!;

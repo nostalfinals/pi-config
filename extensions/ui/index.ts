@@ -15,6 +15,7 @@ import { installWorkingStatus } from "./status/working";
 import { installCompactionSummary } from "./transcript/compaction-summary";
 import { installResponseStats } from "./transcript/response-stats";
 import { installSkillInvocationStyle } from "./transcript/skill-invocation";
+import { installSubagentCompletionStyle } from "./transcript/subagent-completion";
 import { installToolIndicators } from "./transcript/tool-indicator";
 
 const POLL_INTERVAL_MS = 3_000;
@@ -43,6 +44,7 @@ export default function uiShell(pi: ExtensionAPI) {
   installCompactionSummary(pi);
   installResponseStats(pi);
   installSkillInvocationStyle(pi);
+  installSubagentCompletionStyle(pi);
   installToolIndicators(pi);
   installWorkingStatus(pi);
 
