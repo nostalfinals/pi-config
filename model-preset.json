@@ -3,7 +3,7 @@
   "presets": [
     {
       "provider": "openai-codex",
-      "model": "gpt-6-sol",
+      "model": "gpt-5.6-sol",
       "thinkingLevel": "medium"
     },
     {
@@ -23,8 +23,8 @@
     },
     {
       "provider": "deepseek",
-      "model": "deepseek-v4-flash-vision-exp",
-      "thinkingLevel": "max"
+      "model": "deepseek-flash",
+      "thinkingLevel": "high"
     }
   ]
 }
