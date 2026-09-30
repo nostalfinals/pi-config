@@ -1,10 +1,10 @@
 {
-  "lastChangelogVersion": "0.87.1",
+  "lastChangelogVersion": "0.99.1",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-terra",
-  "defaultThinkingLevel": "high",
+  "defaultModel": "gpt-6.1-sol",
+  "defaultThinkingLevel": "medium",
   "hideThinkingBlock": true,
   "packages": [
     "git:github.com/nostalfinals/cooperate@15e3e22aec2e2ddb3ffffca75b81b6abca7be8c4",
