@@ -17,11 +17,6 @@
       "thinkingLevel": "medium"
     },
     {
-      "provider": "bigmodel",
-      "model": "glm-5.3-flash",
-      "thinkingLevel": "high"
-    },
-    {
       "provider": "deepseek",
       "model": "deepseek-flash",
       "thinkingLevel": "high"
