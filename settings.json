@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.99.2",
+  "lastChangelogVersion": "1.0.0",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
@@ -15,5 +15,7 @@
     "showImages": false
   },
   "tuiMode": "fullscreen",
-  "defaultTools": ["+codemode"]
+  "defaultTools": [
+    "+codemode"
+  ]
 }
