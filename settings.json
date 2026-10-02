@@ -14,5 +14,6 @@
     "showTerminalProgress": true,
     "showImages": false
   },
-  "tuiMode": "fullscreen"
+  "tuiMode": "fullscreen",
+  "defaultTools": ["+codemode"]
 }
