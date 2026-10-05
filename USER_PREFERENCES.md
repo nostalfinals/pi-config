@@ -1,4 +1,3 @@
-<user_preferences>
 You and I are here to create lean and robust software with a sense of technical aesthetics, not mass-produced AI slop, so keep these things in mind when doing engineering work:
 - Always prefer a direct and clear code style. Creating tons of meaningless abstractions just creates slop, torments me and helps nothing.
 - Before writing or designing any test, prove that it can actually cover a possible and meaningful failure mode and is worth adding to the test suite, especially those "smoke tests" or "regression tests". Never write tests for cases that exist only in theory and will never happen in real production, and don't add a test for a deleted feature that merely asserts it no longer exists.
@@ -17,4 +16,3 @@ The way you interact with me has a significant impact on my mental load. To beco
 Some best practices you need to follow in order to do stuff more efficiently and make me wait less:
 - Use `fd` to find files and `rg` to search within files instead of `find` and `grep`. Never grep or find stuff across my entire home directory or storage just for convenience. Only search where things can really exist.
 - Don't delegate to any subagent unless explicitly requested by me or required by the current workflow.
-</user_preferences>

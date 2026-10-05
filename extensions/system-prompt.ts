@@ -4,6 +4,7 @@
  * Opens a scrollable viewer with stats and prompt sources.
  * In the viewer: ↑/↓/j/k scroll, PgUp/PgDn page, Home/End jump, Esc/q close.
  */
+import { getCurrentSystemPrompt } from "@earendil-works/pi-ai";
 import {
 	DynamicBorder,
 	type ExtensionAPI,
@@ -14,6 +15,16 @@ import { Container, matchesKey, Text, truncateToWidth } from "@earendil-works/pi
 
 function estimateTokens(text: string): number {
 	return Math.max(0, Math.ceil([...text].length / 4));
+}
+
+/**
+ * The prompt the model actually receives. ctx.getSystemPrompt() renders the base options
+ * and drops sections added by before_agent_start once the run ends, so replay the
+ * transcript sections instead. Fall back to the base prompt on a session with no run yet.
+ */
+function effectiveSystemPrompt(ctx: ExtensionCommandContext): string {
+	const messages = ctx.sessionManager.buildSessionProjection().messages;
+	return getCurrentSystemPrompt(messages) || ctx.getSystemPrompt();
 }
 
 function buildSourceLines(ctx: ExtensionCommandContext): string[] {
@@ -182,13 +193,13 @@ export default function (pi: ExtensionAPI) {
 		description: "Audit the current system prompt in a scrollable viewer",
 		handler: async (_args, ctx) => {
 			if (ctx.mode !== "tui") {
-				console.log(ctx.getSystemPrompt());
+				console.log(effectiveSystemPrompt(ctx));
 				return;
 			}
 			if (viewerOpen) return;
 			viewerOpen = true;
 
-			const prompt = ctx.getSystemPrompt();
+			const prompt = effectiveSystemPrompt(ctx);
 			const headerLines = [
 				`${prompt.length.toLocaleString("en-US")} chars · ~${estimateTokens(prompt).toLocaleString("en-US")} tokens · ${prompt.split("\n").length.toLocaleString("en-US")} lines`,
 				...buildSourceLines(ctx),
