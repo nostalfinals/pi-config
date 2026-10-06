@@ -106,7 +106,7 @@ function parseUsage(payload: unknown, fallbackEmail?: string): CodexUsage {
 
   const limits: UsageLimit[] = [];
   const main = parseRateLimit(payload.rate_limit);
-  if (main.primary || main.secondary) limits.push({ label: "Codex", ...main });
+  if (main.primary || main.secondary) limits.push({ label: limitLabel("codex"), ...main });
 
   if (Array.isArray(payload.additional_rate_limits)) {
     for (const item of payload.additional_rate_limits) {
@@ -114,7 +114,7 @@ function parseUsage(payload: unknown, fallbackEmail?: string): CodexUsage {
       const parsed = parseRateLimit(item.rate_limit);
       if (!parsed.primary && !parsed.secondary) continue;
       limits.push({
-        label: nonEmptyString(item.limit_name) ?? nonEmptyString(item.metered_feature) ?? "Additional limit",
+        label: limitLabel(nonEmptyString(item.metered_feature), nonEmptyString(item.limit_name)),
         ...parsed,
       });
     }
@@ -245,10 +245,12 @@ function resetText(window: UsageWindow): string | undefined {
   return "reset due now";
 }
 
-function titleCase(value: string): string {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+function limitLabel(id?: string, name?: string): string {
+  switch (id) {
+    case "codex": return "Codex";
+    case "base_model_inference": return "GPT Reserve";
+    default: return name ?? id ?? "Additional limit";
+  }
 }
 
 function renderWindow(
@@ -330,14 +332,14 @@ async function showCodexUsageDialog(ctx: ExtensionContext): Promise<void> {
           container.addChild(new Text(state.error.message, 1, 0));
         } else {
           const { usage } = state;
-          const account = [usage.email, usage.plan ? `${titleCase(usage.plan)} plan` : undefined]
+          const account = [usage.email, usage.plan ? `${usage.plan} plan` : undefined]
             .filter(Boolean)
             .join(" · ");
           if (account) container.addChild(new Text(theme.fg("muted", account), 1, 1));
 
           for (const [index, limit] of usage.limits.entries()) {
             if (usage.limits.length > 1) {
-              container.addChild(new Text(theme.fg("accent", theme.bold(titleCase(limit.label))), 1, index === 0 ? 1 : 0));
+              container.addChild(new Text(`${index > 0 ? "\n" : ""}${theme.fg("accent", theme.bold(limit.label))}`, 1, 0));
             }
             if (limit.primary) container.addChild(new Text(renderWindow(theme, limit.primary, "Primary", width), 1, 0));
             if (limit.secondary) container.addChild(new Text(renderWindow(theme, limit.secondary, "Secondary", width), 1, 0));
