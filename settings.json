@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.0.0",
+  "lastChangelogVersion": "1.0.4",
   "theme": "catppuccin-mocha",
   "quietStartup": true,
   "defaultProvider": "openai-codex",
@@ -7,7 +7,7 @@
   "defaultThinkingLevel": "medium",
   "hideThinkingBlock": true,
   "packages": [
-    "git:github.com/nostalfinals/cooperate@15e3e22aec2e2ddb3ffffca75b81b6abca7be8c4",
+    "git:github.com/nostalfinals/cooperate@2c0e15093aad1889e6655f7acdc8091aaf38a8a0",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
