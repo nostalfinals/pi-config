@@ -1,8 +1,8 @@
 ---
 name: reviewer
 description: Invoked through the ask-for-review skill to find concrete correctness defects and verify fixes
-model: openai-codex/gpt-5.6-sol
-thinking: high
+model: openai-codex/gpt-6.1-sol
+thinking: medium
 tools: "*, -write, -edit, -subagent"
 ---
 
