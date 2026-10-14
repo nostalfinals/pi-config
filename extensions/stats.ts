@@ -271,13 +271,16 @@ export function formatCost(cost: number): string {
   return `$${cost.toFixed(4)}`;
 }
 
+function modelTotal(usage: ModelUsage): number {
+  return usage.input + usage.output + usage.cacheRead + usage.cacheWrite;
+}
+
 function sortedModels(aggregate: Aggregate, sortBy: "cost" | "tokens"): Array<[string, ModelUsage]> {
-  const totalTokens = (usage: ModelUsage): number => usage.input + usage.output + usage.cacheRead + usage.cacheWrite;
   return [...aggregate.models.entries()].sort((a, b) => {
     if (sortBy === "cost") {
       if (b[1].cost !== a[1].cost) return b[1].cost - a[1].cost;
     }
-    return totalTokens(b[1]) - totalTokens(a[1]);
+    return modelTotal(b[1]) - modelTotal(a[1]);
   });
 }
 
@@ -402,27 +405,31 @@ class StatsViewer {
       const cells = models.map(([key, usage]) => ({
         key,
         messages: String(usage.messages),
+        total: formatTokens(modelTotal(usage)),
         input: formatTokens(usage.input),
         output: formatTokens(usage.output),
         cacheRead: formatTokens(usage.cacheRead),
         cost: formatCost(usage.cost),
       }));
-      const headers = { key: "Model", messages: "Msgs", input: "Input", output: "Output", cacheRead: "Cache Read", cost: "Cost" };
+      const headers = { key: "Model", messages: "Msgs", total: "Total", input: "Input", output: "Output", cacheRead: "Cache Read", cost: "Cost" };
       const maxWidth = (field: keyof typeof headers): number =>
         Math.max(headers[field].length, ...cells.map((cell) => cell[field].length));
       const msgWidth = maxWidth("messages");
+      const totalWidth = maxWidth("total");
       const inWidth = maxWidth("input");
       const outWidth = maxWidth("output");
       const cacheWidth = maxWidth("cacheRead");
       const costWidth = maxWidth("cost");
       // Stretch the model column so Cost sits at the terminal's right edge;
       // model names only trim when even that leaves too little room.
-      const fixedWidth = (msgWidth + 2) + (inWidth + 2) + (outWidth + 2) + (cacheWidth + 2) + (costWidth + 2);
+      const fixedWidth =
+        (msgWidth + 2) + (totalWidth + 2) + (inWidth + 2) + (outWidth + 2) + (cacheWidth + 2) + (costWidth + 2);
       const keyWidth = Math.max(20, Math.max(width - 2, 0) - fixedWidth);
 
       const rowLine = (cell: (typeof cells)[number]): string =>
         truncateToWidth(cell.key, keyWidth).padEnd(keyWidth) +
         cell.messages.padStart(msgWidth + 2) +
+        cell.total.padStart(totalWidth + 2) +
         cell.input.padStart(inWidth + 2) +
         cell.output.padStart(outWidth + 2) +
         cell.cacheRead.padStart(cacheWidth + 2) +
@@ -431,6 +438,7 @@ class StatsViewer {
       const headerRow =
         headers.key.padEnd(keyWidth) +
         headers.messages.padStart(msgWidth + 2) +
+        headers.total.padStart(totalWidth + 2) +
         headers.input.padStart(inWidth + 2) +
         headers.output.padStart(outWidth + 2) +
         headers.cacheRead.padStart(cacheWidth + 2) +
