@@ -7,7 +7,6 @@
   "defaultThinkingLevel": "medium",
   "hideThinkingBlock": true,
   "packages": [
-    "git:github.com/nostalfinals/cooperate@2c0e15093aad1889e6655f7acdc8091aaf38a8a0",
     "npm:pi-compact-thinking"
   ],
   "terminal": {
