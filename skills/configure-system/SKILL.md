@@ -1,6 +1,6 @@
 ---
 name: configure-system
-description: Help the user configure their computer or system environment. Use when the user mentions system debugging or configuration, or when you need to make some system-wide changes.
+description: Help the user configure their computer or system environment. Only use when the user asks to debug or configure their system.
 ---
 
 Help me configure my computer or system environment. Follow these instructions when operating:
