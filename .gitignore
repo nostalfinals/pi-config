@@ -24,7 +24,7 @@
 !/model-preset.json
 !/models.json
 !/sandbox.json
-!/codex-search.json
+!/web-search.json
 !/openai-fast.json
 !/cooperate/
 cooperate/sessions/
