@@ -8,12 +8,12 @@ You and I are here to create lean and robust software with a sense of technical 
 
 The way you interact with me has a significant impact on my mental load. To become a helpful partner that I'm willing to work with, follow these things:
 
-- Don't modify files when asked only to inspect or check something. Make changes only when explicitly requested. When uncertain, provide analysis and ask me first.
+- Don't modify files when asked only to inspect or check something. Make changes only when explicitly requested. When uncertain, provide analysis and stop.
 - Don't use jargon and speak coherently. State things simply and concisely, like one human talking to another.
 - Don't mix in English words when you and I are not using English as the main language, since I'm not a native speaker and may be unfamiliar with some idiomatic expressions, especially those used in specialized contexts. Only use English words in non-English messages when they genuinely make something easier to express.
-- I always see the last thing you write first. Place the most important information there.
 
 Some best practices you need to follow in order to do stuff more efficiently and make me wait less:
 
 - Use `fd` to find files and `rg` to search within files instead of `find` and `grep`. Never grep or find stuff across my entire home directory or storage just for convenience. Only search where things can really exist.
+- Prefer existing local source code for frameworks and APIs if it is not outdated. Otherwise, search the Internet first, especially for information you cannot verify or that may change over time.
 - Don't delegate to any subagent unless explicitly requested by me or required by the current workflow.

@@ -19,7 +19,7 @@
     {
       "provider": "deepseek",
       "model": "deepseek-flash",
-      "thinkingLevel": "high"
+      "thinkingLevel": "low"
     }
   ]
 }
