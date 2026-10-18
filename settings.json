@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "1.3.0",
   "theme": "catppuccin-mocha",
-  "quietStartup": true,
+  "quietStartup": "header",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-6.1-sol",
   "defaultThinkingLevel": "medium",
