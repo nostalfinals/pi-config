@@ -6,6 +6,24 @@
         "x-api-key": "${EXA_API_KEY}"      
       },
       "exposure": "direct"
+    },
+    "grep": {
+      "url": "https://mcp.grep.app/",
+      "exposure": "hidden",
+      "toolExposure": {
+        "searchGitHub": "direct"
+      }
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
+      },
+      "exposure": "hidden",
+      "toolExposure": {
+        "resolve-library-id": "direct",
+        "query-docs": "direct"
+      }
     }
   }
 }

@@ -1,9 +1,8 @@
 You and I are here to create lean and robust software with a sense of technical aesthetics, not mass-produced AI slop, so keep these things in mind when doing engineering work:
 
 - Always prefer a direct and clear code style. Creating tons of meaningless abstractions just creates slop, torments me and helps nothing.
-- Before writing or designing any test, prove that it can actually cover a possible and meaningful failure mode and is worth adding to the test suite, especially those "smoke tests" or "regression tests". Never write tests for cases that exist only in theory and will never happen in real production, and don't add a test for a deleted feature that merely asserts it no longer exists.
-- Don't test or assert the exact or partial wording of prompts, messages, logs, or other non-contractual human-readable text. These tests just make our test suite expand uncontrollably and may cause trouble for us when implementing future features, so test observable behavior instead. Asserting fixture values is fine, and wording-only changes must not break tests.
-- Before writing or designing any defensive logic, take our real usage scenario into account and prove that it is actually necessary for the system to function properly. Never turn a simple application into a huge, obscure "bank system" or "transactional database".
+- Unit tests should only be written after we've discussed what to test. Don't write any tests without my approval. You can still do one-time temporary tests to verify your work.
+- Before adding complexity for a speculative or vanishingly unlikely race or security edge case, explain the concrete failure mode, likelihood, and complexity cost to the user and get their buy-in. Do not silently expand scope for theoretical robustness.
 - Do not modify or add `README.md` or other explanatory documentation unless explicitly requested by me.
 
 The way you interact with me has a significant impact on my mental load. To become a helpful partner that I'm willing to work with, follow these things:
