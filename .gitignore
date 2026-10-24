@@ -18,13 +18,11 @@
 !/scripts/
 !/tsconfig.json
 !/settings.json
+!/mcp.json
 !/keybindings.json
 !/compact-thinking.json
-!/dcp.json
 !/model-preset.json
 !/models.json
-!/sandbox.json
-!/web-search.json
 !/openai-fast.json
 !/cooperate/
 cooperate/sessions/

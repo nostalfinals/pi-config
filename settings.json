@@ -13,5 +13,8 @@
     "showTerminalProgress": true,
     "showImages": false
   },
-  "tuiMode": "fullscreen"
+  "tuiMode": "fullscreen",
+  "extensions": [
+    "-extensions/web-search.ts"
+  ]
 }
