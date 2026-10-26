@@ -93,12 +93,12 @@ export function installFooter(
           .filter(Boolean);
         const expanded = getToolsExpanded() ? theme.fg("muted", "expanded") : "";
         const modelFull = model
-          ? `${theme.fg("muted", `${model.provider}/${model.id}`)} ${theme.fg(
+          ? `${theme.fg("muted", model.name)} ${theme.fg(
               "dim",
               model.reasoning ? pi.getThinkingLevel() : "off",
             )}`
           : theme.fg("muted", "no-model");
-        const modelCompact = theme.fg("muted", model?.id ?? "no-model");
+        const modelCompact = theme.fg("muted", model?.name ?? "no-model");
 
         const candidates = [
           { left: join([workspace, contextFull, cacheHit, cost, ...statuses, expanded]), right: modelFull },

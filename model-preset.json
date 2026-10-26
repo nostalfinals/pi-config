@@ -19,7 +19,12 @@
     {
       "provider": "kimi-coding",
       "model": "k3.1-pro",
-      "thinkingLevel": "low"
+      "thinkingLevel": "high"
+    },
+    {
+      "provider": "kimi-coding",
+      "model": "k3-256k",
+      "thinkingLevel": "high"
     },
     {
       "provider": "deepseek",

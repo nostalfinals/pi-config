@@ -1,5 +1,6 @@
 {
   "useSummaryTitlesAsThinkingTitle": true,
-  "previewLines": 0,
-  "animationIntervalMs": 90
+  "previewLines": 2,
+  "animationIntervalMs": 90,
+  "animationStyle": "gradient"
 }
