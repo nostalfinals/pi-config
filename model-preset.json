@@ -17,6 +17,11 @@
       "thinkingLevel": "medium"
     },
     {
+      "provider": "kimi-coding",
+      "model": "k3.1-pro",
+      "thinkingLevel": "low"
+    },
+    {
       "provider": "deepseek",
       "model": "deepseek-flash",
       "thinkingLevel": "low"
