@@ -5,6 +5,7 @@
   "defaultProvider": "kimi-coding",
   "defaultModel": "k3.1-pro",
   "defaultThinkingLevel": "high",
+  "cacheWarming": "idle",
   "hideThinkingBlock": true,
   "packages": [
     "npm:pi-compact-thinking"

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "kimi-coding": {
+      "modelOverrides": {
+        "kimi-for-coding": {
+          "promptCache": {
+            "short": 3600
+          }
+        },
+        "k3-256k": {
+          "promptCache": {
+            "short": 1800
+          }
+        },
+        "k3.1-pro": {
+          "promptCache": {
+            "short": 1800
+          }
+        }
+      }
+    }
+  }
+}
