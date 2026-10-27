@@ -44,70 +44,64 @@ export function installResponseStats(pi: ExtensionAPI) {
   );
 
   let agentStartedAt: number | null = null;
+  let turnStart: number | null = null;
   let messageStart: number | null = null;
-  let streamStart: number | null = null;
   let totalOutputTokens = 0;
-  let totalStreamMs = 0;
+  let totalRequestMs = 0;
 
   function resetMessage() {
+    turnStart = null;
     messageStart = null;
-    streamStart = null;
   }
 
   pi.on("agent_start", (_event, ctx) => {
     if (ctx.mode !== "tui" || agentStartedAt !== null) return;
     agentStartedAt = Date.now();
     totalOutputTokens = 0;
-    totalStreamMs = 0;
+    totalRequestMs = 0;
     resetMessage();
+  });
+
+  // Pi emits message_start only when the provider stream begins, after TTFT.
+  // turn_start precedes the request, so measuring from it matches OpenRouter's
+  // throughput definition (fetch latency + TTFT + streaming time).
+  pi.on("turn_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
+    turnStart = Date.now();
   });
 
   pi.on("message_start", (event, ctx) => {
     if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
     messageStart = Date.now();
-    streamStart = null;
-  });
-
-  pi.on("message_update", (event, ctx) => {
-    if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
-
-    const type = event.assistantMessageEvent.type;
-    if (
-      type === "text_delta" ||
-      type === "thinking_delta" ||
-      type === "toolcall_delta"
-    ) {
-      streamStart ??= Date.now();
-    }
   });
 
   pi.on("message_end", (event, ctx) => {
     if (ctx.mode !== "tui" || event.message.role !== "assistant") return;
 
     const outputTokens = event.message.usage.output;
-    const startedAt = streamStart ?? messageStart;
+    const startedAt = turnStart ?? messageStart;
     if (startedAt !== null && outputTokens > 0) {
       totalOutputTokens += outputTokens;
-      totalStreamMs += Math.max(0, Date.now() - startedAt);
+      totalRequestMs += Math.max(0, Date.now() - startedAt);
     }
     resetMessage();
   });
 
   pi.on("agent_settled", (_event, ctx) => {
-    if (ctx.mode === "tui" && totalOutputTokens > 0 && totalStreamMs > 0) {
+    if (ctx.mode === "tui" && totalOutputTokens > 0 && totalRequestMs > 0) {
       const elapsedMs = agentStartedAt === null
-        ? totalStreamMs
+        ? totalRequestMs
         : Math.max(0, Date.now() - agentStartedAt);
       pi.appendEntry<ResponseStatsEntryData>(RESPONSE_STATS_ENTRY_TYPE, {
         outputTokens: totalOutputTokens,
-        streamMs: totalStreamMs,
+        streamMs: totalRequestMs,
         elapsedMs,
       });
     }
 
     agentStartedAt = null;
     totalOutputTokens = 0;
-    totalStreamMs = 0;
+    totalRequestMs = 0;
     resetMessage();
   });
 }

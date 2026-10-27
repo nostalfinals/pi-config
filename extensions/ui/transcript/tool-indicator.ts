@@ -562,10 +562,8 @@ export function installToolIndicators(pi: ExtensionAPI) {
       // its transcript gap explicitly below.
       const ownsLeadingGap = componentName === "AssistantMessageComponent" &&
         firstLine.includes(OSC133_ZONE_START);
-      // Keep the first user message one row below the top of the transcript,
-      // even when there is no rendered component before it.
       const gap = isUserMessage
-        ? 1
+        ? (output.length > 0 ? 1 : 0)
         : ownsLeadingGap
           ? 0
           : transcriptGap(previousType, previousKind, type, kind);

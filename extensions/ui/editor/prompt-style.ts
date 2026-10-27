@@ -40,7 +40,7 @@ export function applyPromptEditorStyle<T extends CustomEditor>(
       }
 
       if (index > topBorderIndex && index < bottomBorderIndex) {
-        const prefix = contentLine++ === 0 ? editor.borderColor("> ") : "  ";
+        const prefix = contentLine++ === 0 ? editor.borderColor("❯ ") : "  ";
         return `${prefix}${line}`;
       }
 

@@ -1,5 +1,5 @@
 import { homedir } from "node:os";
-import { basename } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 
 export function formatTokens(tokens: number) {
   const normalizedTokens = Math.max(0, tokens);
@@ -10,6 +10,9 @@ export function formatTokens(tokens: number) {
 }
 
 export function formatWorkspace(cwd: string) {
-  if (cwd === homedir()) return "~";
-  return basename(cwd) || cwd;
+  const relativeToHome = relative(resolve(homedir()), resolve(cwd));
+  const isInsideHome = relativeToHome === "" ||
+    (relativeToHome !== ".." && !relativeToHome.startsWith(`..${sep}`) && !isAbsolute(relativeToHome));
+  if (!isInsideHome) return cwd;
+  return relativeToHome === "" ? "~" : `~${sep}${relativeToHome}`;
 }
