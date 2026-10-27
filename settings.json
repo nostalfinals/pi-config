@@ -3,7 +3,7 @@
   "theme": "catppuccin-mocha",
   "quietStartup": "header",
   "defaultProvider": "kimi-coding",
-  "defaultModel": "k3-256k",
+  "defaultModel": "k3.1-pro",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "packages": [
