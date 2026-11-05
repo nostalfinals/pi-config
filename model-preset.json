@@ -2,18 +2,8 @@
   "shortcut": "ctrl+k",
   "presets": [
     {
-      "provider": "openai-codex",
-      "model": "gpt-6.1-sol",
-      "thinkingLevel": "medium"
-    },
-    {
-      "provider": "openai-codex",
-      "model": "gpt-5.6-sol",
-      "thinkingLevel": "medium"
-    },
-    {
-      "provider": "openai-codex",
-      "model": "gpt-6-astra",
+      "provider": "claude-code",
+      "model": "claude-opus-5-5",
       "thinkingLevel": "medium"
     },
     {
@@ -22,14 +12,9 @@
       "thinkingLevel": "high"
     },
     {
-      "provider": "kimi-coding",
-      "model": "k3-256k",
-      "thinkingLevel": "high"
-    },
-    {
       "provider": "deepseek",
       "model": "deepseek-flash",
-      "thinkingLevel": "low"
+      "thinkingLevel": "high"
     }
   ]
 }

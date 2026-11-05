@@ -1,14 +1,15 @@
 {
-  "lastChangelogVersion": "1.4.0",
+  "lastChangelogVersion": "1.5.0",
   "theme": "catppuccin-mocha",
   "quietStartup": "header",
-  "defaultProvider": "kimi-coding",
-  "defaultModel": "k3.1-pro",
-  "defaultThinkingLevel": "high",
+  "defaultProvider": "claude-code",
+  "defaultModel": "claude-opus-5-5",
+  "defaultThinkingLevel": "medium",
   "cacheWarming": "idle",
   "hideThinkingBlock": true,
   "packages": [
-    "npm:pi-compact-thinking"
+    "npm:pi-compact-thinking",
+    "https://github.com/earendil-works/pi-claude-code"
   ],
   "terminal": {
     "showTerminalProgress": true,
