@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DynamicBorder, getAgentDir, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { Container, SelectList, Spacer, Text, type KeyId } from "@earendil-works/pi-tui";
+import { getSupportedThinkingLevels } from "@earendil-works/pi-ai";
+import { Container, matchesKey, SelectList, Spacer, Text, type KeyId } from "@earendil-works/pi-tui";
 
 export const CONFIG_PATH = join(getAgentDir(), "model-preset.json");
 export const DEFAULT_SHORTCUT: KeyId = "alt+shift+m";
@@ -130,43 +131,84 @@ export async function selectModelPreset(
   ctx: ExtensionContext,
   presets: ModelPreset[],
   isActive: (preset: ModelPreset) => boolean,
+  isAvailable: (preset: ModelPreset) => boolean,
 ): Promise<ModelPreset | undefined> {
+  const available = presets.map(isAvailable);
+  const hasUnavailable = available.includes(false);
+
   const selected = await ctx.ui.custom<string | null>((tui, theme, _keybindings, done) => {
-    const items = presets.map((preset, index) => {
-      const presetText = `${displayModel(preset)} · ${preset.thinkingLevel}`;
-      return {
-        value: String(index),
-        label: isActive(preset)
-          ? `${presetText}  ${theme.fg("success", "active")}`
-          : presetText,
-      };
-    });
+    let showUnavailable = false;
+    let list: SelectList | undefined;
+
+    const listSlot = new Container();
+    const hint = new Text("", 1, 0);
     const container = new Container();
     container.addChild(new DynamicBorder((text: string) => theme.fg("accent", text)));
     container.addChild(new Text(theme.fg("accent", theme.bold("Model Preset")), 1, 0));
     container.addChild(new Spacer(1));
-
-    const list = new SelectList(items, Math.min(items.length, 10), {
-      selectedPrefix: (text) => theme.fg("accent", text),
-      selectedText: (text) => theme.fg("accent", text),
-      description: (text) => theme.fg("muted", text),
-      scrollInfo: (text) => theme.fg("dim", text),
-      noMatch: (text) => theme.fg("warning", text),
-    });
-    const activeIndex = presets.findIndex(isActive);
-    list.setSelectedIndex(activeIndex >= 0 ? activeIndex : 0);
-    list.onSelect = (item) => done(item.value);
-    list.onCancel = () => done(null);
-    container.addChild(list);
+    container.addChild(listSlot);
     container.addChild(new Spacer(1));
-    container.addChild(new Text(theme.fg("dim", "↑↓ navigate · enter select · esc cancel"), 1, 0));
+    container.addChild(hint);
     container.addChild(new DynamicBorder((text: string) => theme.fg("accent", text)));
+
+    function rebuild(): void {
+      const current = list?.getSelectedItem()?.value;
+      const items = presets.flatMap((preset, index) => {
+        if (!available[index] && !showUnavailable) return [];
+
+        const presetText = `${displayModel(preset)} · ${preset.thinkingLevel}`;
+        if (!available[index]) return [{ value: String(index), label: presetText }];
+        return [{
+          value: String(index),
+          label: isActive(preset) ? `${presetText}  ${theme.fg("success", "active")}` : presetText,
+        }];
+      });
+
+      listSlot.clear();
+      if (items.length === 0) {
+        list = undefined;
+        listSlot.addChild(new Text(theme.fg("warning", "No available presets"), 1, 0));
+      } else {
+        list = new SelectList(items, Math.min(items.length, 10), {
+          selectedPrefix: (text) => theme.fg("accent", text),
+          selectedText: (text) => theme.fg("accent", text),
+          description: (text) => theme.fg("dim", text),
+          scrollInfo: (text) => theme.fg("dim", text),
+          noMatch: (text) => theme.fg("warning", text),
+        }, {
+          truncatePrimary: ({ text, item, isSelected }) =>
+            available[Number(item.value)] || isSelected ? text : theme.fg("dim", text),
+        });
+        const keep = items.findIndex((item) => item.value === current);
+        const active = items.findIndex((item) => available[Number(item.value)] && isActive(presets[Number(item.value)]));
+        list.setSelectedIndex(keep >= 0 ? keep : active >= 0 ? active : 0);
+        list.onSelect = (item) => {
+          if (available[Number(item.value)]) done(item.value);
+        };
+        list.onCancel = () => done(null);
+        listSlot.addChild(list);
+      }
+
+      const toggle = !hasUnavailable
+        ? ""
+        : ` · tab ${showUnavailable ? "hide" : "show"} unavailable`;
+      hint.setText(theme.fg("dim", `↑↓ navigate · enter select${toggle} · esc cancel`));
+    }
+
+    rebuild();
 
     return {
       render: (width: number) => container.render(width),
       invalidate: () => container.invalidate(),
       handleInput: (data: string) => {
-        list.handleInput(data);
+        if (matchesKey(data, "tab") && hasUnavailable) {
+          showUnavailable = !showUnavailable;
+          rebuild();
+        } else if (list) {
+          list.handleInput(data);
+        } else if (matchesKey(data, "escape") || matchesKey(data, "ctrl+c")) {
+          done(null);
+        }
         tui.requestRender();
       },
     };
@@ -184,6 +226,13 @@ export default function modelPresets(pi: ExtensionAPI): void {
     return ctx.model?.provider === preset.provider
       && ctx.model.id === preset.model
       && pi.getThinkingLevel() === preset.thinkingLevel;
+  }
+
+  function isAvailable(preset: ModelPreset, ctx: ExtensionContext): boolean {
+    const model = ctx.modelRegistry.find(preset.provider, preset.model);
+    return model !== undefined
+      && ctx.modelRegistry.hasConfiguredAuth(model)
+      && getSupportedThinkingLevels(model).includes(preset.thinkingLevel);
   }
 
   async function applyPreset(preset: ModelPreset, ctx: ExtensionContext): Promise<void> {
@@ -225,7 +274,12 @@ export default function modelPresets(pi: ExtensionAPI): void {
 
     selectorOpen = true;
     try {
-      const preset = await selectModelPreset(ctx, config.presets, (candidate) => isActive(candidate, ctx));
+      const preset = await selectModelPreset(
+        ctx,
+        config.presets,
+        (candidate) => isActive(candidate, ctx),
+        (candidate) => isAvailable(candidate, ctx),
+      );
       if (preset) await applyPreset(preset, ctx);
     } finally {
       selectorOpen = false;
