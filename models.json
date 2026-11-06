@@ -19,6 +19,28 @@
           }
         }
       }
+    },
+    "claude-code": {
+      "modelOverrides": {
+        "claude-opus-5-5": {
+          "promptCache": {
+            "short": 3600,
+            "long": 3600
+          }
+        },
+        "claude-sonnet-5-5": {
+          "promptCache": {
+            "short": 3600,
+            "long": 3600
+          }
+        },
+        "claude-haiku-5-5": {
+          "promptCache": {
+            "short": 3600,
+            "long": 3600
+          }
+        }
+      }
     }
   }
 }
