@@ -25,6 +25,7 @@
 !/model-preset.json
 !/models.json
 !/openai-fast.json
+!/collab.json
 !/cooperate/
 cooperate/sessions/
 cooperate/history
