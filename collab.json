@@ -1,4 +1,9 @@
 {
+  "default": {
+    "model": "openrouter/deepseek/deepseek-v4.1-flash-1017",
+    "thinkingLevel": "high"
+  },
+  "autoEnable": true,
   "collaborator": {
     "extensions": {
       "include": [],
