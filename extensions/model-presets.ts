@@ -19,6 +19,7 @@ export interface ModelPreset {
 export interface LoadedConfig {
   shortcut: KeyId;
   presets: ModelPreset[];
+  defaultIndex: number | undefined;
   errors: string[];
 }
 
@@ -56,7 +57,7 @@ function isThinkingLevel(value: unknown): value is ThinkingLevel {
 }
 
 export function loadConfig(): LoadedConfig {
-  const fallback: LoadedConfig = { shortcut: DEFAULT_SHORTCUT, presets: [], errors: [] };
+  const fallback: LoadedConfig = { shortcut: DEFAULT_SHORTCUT, presets: [], defaultIndex: undefined, errors: [] };
   let parsed: unknown;
 
   try {
@@ -79,12 +80,13 @@ export function loadConfig(): LoadedConfig {
     else errors.push(`shortcut must be a valid key combination; using ${DEFAULT_SHORTCUT}`);
   }
 
-  if (value.presets === undefined) return { shortcut, presets: [], errors };
+  if (value.presets === undefined) return { shortcut, presets: [], defaultIndex: undefined, errors };
   if (!Array.isArray(value.presets)) {
-    return { shortcut, presets: [], errors: [...errors, "presets must be an array"] };
+    return { shortcut, presets: [], defaultIndex: undefined, errors: [...errors, "presets must be an array"] };
   }
 
   const presets: ModelPreset[] = [];
+  let defaultIndex: number | undefined;
   const seen = new Set<string>();
   value.presets.forEach((entry, index) => {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
@@ -105,6 +107,10 @@ export function loadConfig(): LoadedConfig {
       errors.push(`presets[${index}].thinkingLevel must be one of: ${THINKING_LEVELS.join(", ")}`);
       return;
     }
+    if (preset.default !== undefined && typeof preset.default !== "boolean") {
+      errors.push(`presets[${index}].default must be a boolean`);
+      return;
+    }
 
     const normalized: ModelPreset = {
       provider: preset.provider.trim(),
@@ -117,10 +123,14 @@ export function loadConfig(): LoadedConfig {
       return;
     }
     seen.add(key);
+    if (preset.default === true) {
+      if (defaultIndex === undefined) defaultIndex = presets.length;
+      else errors.push(`presets[${index}].default ignored; only one preset can be default`);
+    }
     presets.push(normalized);
   });
 
-  return { shortcut, presets, errors };
+  return { shortcut, presets, defaultIndex, errors };
 }
 
 export function displayModel(preset: ModelPreset): string {
@@ -296,9 +306,35 @@ export default function modelPresets(pi: ExtensionAPI): void {
     handler: showSelector,
   });
 
-  pi.on("session_start", async (_event, ctx) => {
+  // Explicit model flags on the command line win over the default preset.
+  const cliPicksModel = process.argv.some((arg) =>
+    ["--provider", "--model", "--models", "--thinking"].includes(arg)
+  );
+
+  // Default preset first, then the rest in config order. Falls back silently.
+  async function applyDefaultPreset(ctx: ExtensionContext): Promise<void> {
+    if (config.defaultIndex === undefined) return;
+
+    const preferred = config.presets[config.defaultIndex];
+    const candidates = [preferred, ...config.presets.filter((preset) => preset !== preferred)];
+    for (const preset of candidates) {
+      if (!isAvailable(preset, ctx)) continue;
+
+      const model = ctx.modelRegistry.find(preset.provider, preset.model)!;
+      if (!(await pi.setModel(model))) continue;
+      pi.setThinkingLevel(preset.thinkingLevel);
+      return;
+    }
+  }
+
+  pi.on("session_start", async (event, ctx) => {
     if (config.errors.length > 0) {
       ctx.ui.notify(`Invalid model-preset config (${CONFIG_PATH}):\n${config.errors.join("\n")}`, "error");
     }
+
+    // Only fresh sessions; resumed/continued/forked ones keep their own model.
+    const fresh = (event.reason === "startup" && !cliPicksModel) || event.reason === "new";
+    const hasMessages = ctx.sessionManager.getBranch().some((entry) => entry.type === "message");
+    if (fresh && !hasMessages) await applyDefaultPreset(ctx);
   });
 }
