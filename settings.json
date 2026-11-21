@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.5.2",
+  "lastChangelogVersion": "1.6.0",
   "theme": "catppuccin-mocha",
   "quietStartup": "header",
   "defaultProvider": "claude-code",
